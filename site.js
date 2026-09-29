@@ -22,8 +22,8 @@
     size(); addEventListener('resize', size);
     var last = 0;
     addEventListener('mousemove', function(e){
-      var now = performance.now(); if(now - last < 28) return; last = now;
-      parts.push({x:e.clientX, y:e.clientY, vx:(Math.random()-.5)*1.4, vy:-Math.random()*1.2-.3, life:1, r:Math.random()*5+3, rot:Math.random()*Math.PI, col:colors[(Math.random()*colors.length)|0]});
+      var now = performance.now(); if(now - last < 16) return; last = now;
+      parts.push({x:e.clientX, y:e.clientY, vx:(Math.random()-.5)*.8, vy:-Math.random()*.6-.1, life:1, r:Math.random()*5+3, rot:Math.random()*Math.PI, col:colors[(Math.random()*colors.length)|0]});
       if(parts.length > 80) parts.shift();
     });
     function star(x,y,r,rot){ ctx.beginPath(); for(var i=0;i<10;i++){ var rr = i%2?r*.45:r, a = rot + i*Math.PI/5; ctx.lineTo(x+Math.cos(a)*rr, y+Math.sin(a)*rr); } ctx.closePath(); }
