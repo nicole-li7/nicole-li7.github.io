@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="InternScout by Nicole Li: a C++17 Mac app that pulls about 13,000 live internship postings and ranks them against your profile.">
+<link rel="icon" href="../figures/idea.png">
+<title>InternScout · Nicole Li</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<style>
+.is{display:grid; grid-template-columns:290px 1fr; gap:22px; align-items:start}
+.prof{background:var(--g1); border:2.5px solid var(--line); border-radius:16px; padding:14px}
+.prof h4{font:600 17px "Fredoka",sans-serif; margin:0 0 10px}
+.prof .ctrl{margin-bottom:12px}
+.prof .ctrl + .ctrl{margin-top:0}
+.prof .lbl{width:100%}
+.prof .tog{background:var(--paper)}
+.prof .tog[aria-pressed="true"]{background:var(--g4)}
+.fixed{font-size:13.5px; color:var(--ink-soft); margin:4px 0 0}
+.toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:12px; font:600 14px "Fredoka",sans-serif}
+.list{display:grid; gap:8px}
+.row{display:block; width:100%; text-align:left; font:inherit; color:var(--ink); background:var(--paper); border:2.5px solid var(--line); border-radius:14px; padding:10px 12px; cursor:pointer; transition:transform .15s}
+.row:hover{transform:translateX(3px)}
+.row:focus-visible{outline:3px dashed var(--g5); outline-offset:2px}
+.row .top{display:flex; gap:12px; align-items:center}
+.score{flex:none; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font:700 17px "Fredoka",sans-serif; border:2.5px solid #1F3A2A; color:#12281A}
+.who{min-width:0; flex:1}
+.who b{font:600 16px "Fredoka",sans-serif; display:block; line-height:1.25}
+.who small{color:var(--ink-soft); font-size:13.5px}
+.new{font:700 11px "Fredoka",sans-serif; background:#FFE97A; color:#12281A; border:2px solid #1F3A2A; border-radius:999px; padding:0 7px; margin-left:6px; vertical-align:2px}
+.why{display:flex; flex-wrap:wrap; gap:5px; margin-top:7px}
+.why span{font-size:12px; font-weight:600; border-radius:999px; padding:1px 8px; background:var(--g1); border:1.5px solid var(--g3)}
+.why span.warn{background:transparent; border:1.5px dashed #C8697A; color:var(--ink)}
+.brk{margin-top:10px; border-top:2px dashed var(--g3); padding-top:8px; font-size:13.5px; display:grid; grid-template-columns:1fr auto; gap:2px 14px}
+.brk span:nth-child(even){font-weight:800; text-align:right}
+.brk .tot{border-top:2px solid var(--line); padding-top:3px}
+.empty{padding:20px; text-align:center; color:var(--ink-soft); border:2.5px dashed var(--g3); border-radius:14px}
+@media (max-width:760px){ .is{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="p-approve" viewBox="0 0 148 247"><image href="../figures/approve.png" width="148" height="247"/></symbol>
+  <symbol id="p-present" viewBox="0 0 165 276"><image href="../figures/present.png" width="165" height="276"/></symbol>
+  <symbol id="p-idea" viewBox="0 0 127 259"><image href="../figures/idea.png" width="127" height="259"/></symbol>
+</svg>
+<div class="floaters" aria-hidden="true">
+  <span class="s1" style="left:5%;top:16%;background:var(--g3);animation-delay:-2s"></span>
+  <span class="s3" style="left:86%;top:10%;background:var(--g2);animation-delay:-1s;width:80px;height:80px"></span>
+  <span class="s2" style="left:90%;top:62%;background:var(--g4);animation-delay:-8s;width:50px;height:50px"></span>
+</div>
+<canvas id="sparkles" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Site">
+  <ul>
+    <li><a href="../index.html">home</a></li>
+    <li><a href="../index.html#projects">projects</a></li>
+    <li><a href="../index.html#contact">say hi</a></li>
+    <li><button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button></li>
+  </ul>
+</nav>
+
+<main class="wrap">
+  <header class="phero">
+    <div>
+      <a class="back" href="../index.html#projects"><span class="ar">←</span> back to the sticker book</a><br>
+      <span class="eyebrow">C++17 · Mac app</span>
+      <h1>InternScout</h1>
+      <p class="plead">Internship hunting means checking dozens of career pages every day. InternScout does it for me. It pulls about 13,000 live postings from 1,700 companies, scores every one against my profile, and tells me what's new since I last looked.</p>
+      <div class="tags"><span>C++17</span><span>SDL2</span><span>Dear ImGui</span><span>libcurl</span><span>multithreading</span><span>CMake</span></div>
+      <div class="btns">
+        <a class="btn" href="#demo">try it ✨</a>
+        <a class="btn alt" href="https://github.com/nicole-li7/internscout" target="_blank" rel="noopener">github</a>
+      </div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="pad a"></div>
+      <div class="smk hero-smk"><svg viewBox="0 0 148 247"><use href="#p-approve"/></svg></div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div><h2>try it</h2></div>
+    <div class="demo-card">
+      <h3 class="demo-sub">Rank some internships</h3>
+      <p>Change the profile and the list re-ranks. Click any posting to see exactly where its score came from.</p>
+      <div class="is">
+        <div class="prof">
+          <h4>my profile</h4>
+          <div class="ctrl"><label class="lbl" for="term">term</label>
+            <select class="sel" id="term"><option>Summer 2027</option><option>Fall 2026</option><option>Winter 2027</option></select>
+          </div>
+          <div class="ctrl" id="ints"><span class="lbl">interests</span></div>
+          <div class="ctrl" id="locs"><span class="lbl">locations</span></div>
+          <div class="ctrl"><span class="lbl">also</span>
+            <button class="tog" type="button" id="remote" aria-pressed="true">remote is ok</button>
+            <button class="tog" type="button" id="spons" aria-pressed="false">I need visa sponsorship</button>
+          </div>
+          <p class="fixed">Computer Science · Bachelor's · Canada</p>
+        </div>
+        <div>
+          <div class="toolbar">
+            <label for="min">min score <b id="minv">40</b></label>
+            <input type="range" id="min" min="0" max="100" step="5" value="40">
+            <span id="count"></span>
+            <button class="btn small alt" type="button" id="seen">mark all as seen</button>
+          </div>
+          <div class="list" id="list" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">These are made-up sample postings, scored with the same rules as the app, ported to JavaScript. The real app fetches live ones.</p>
+  </section>
+
+  <section>
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div><h2>how it works</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>Where the postings come from</h3>
+        <p>Two community-maintained internship lists on GitHub are the starting point. With "Deep search" on, InternScout follows every link in them, works out which job board each company uses, and queries about 2,400 boards directly: Greenhouse, Ashby, Lever, Workday, SmartRecruiters and Workable.</p>
+        <p>That turns roughly 4,000 postings from 800 companies into about 13,000 from 1,700, including roles nobody submitted to the lists.</p>
+      </div>
+      <div class="note">
+        <h3>The match score</h3>
+        <p>Every posting gets up to 100 points: the right term (25), relevance to my major and interests (40), location (20), degree level (10) and how recently it was posted (10). Postings that want a different degree, or won't sponsor a visa when you need one, lose points.</p>
+        <p>Each score keeps its reasons, so the app can tell you <em>why</em> a posting ranked where it did.</p>
+      </div>
+      <div class="note">
+        <h3>Hiding what I can't apply to</h3>
+        <p>A separate eligibility pass reads each description for hard requirements: citizenship or security clearance, no sponsorship, graduation window, degree level. Postings I don't qualify for are hidden by default, with a toggle to show everything.</p>
+      </div>
+      <div class="note">
+        <h3>Never losing an application</h3>
+        <p>Saved and applied postings are copied into my own data, not just bookmarked by ID. If a company closes a posting or changes its ID, it stays on my Applied page marked as closed instead of quietly disappearing.</p>
+      </div>
+      <div class="note">
+        <h3>A real Mac app</h3>
+        <p>The window is SDL2 + OpenGL + Dear ImGui, with dropdowns for university, degree and year and multi-select lists for interests and locations. It installs to <code>/Applications</code> as a self-contained bundle. A command-line version shares the same core library and data.</p>
+      </div>
+      <div class="note">
+        <h3>It checks for me</h3>
+        <p>Leave it open and it re-checks every 15 to 120 minutes and sends a macOS notification when a good new match appears. Listings are cached for 6 hours so reopening the app is instant.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="title"><h2>the tricky parts</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>Fast, but not too fast</h3>
+        <p>Fetching one list at a time took about 36 seconds, and 8 threads brought that down to about 4. For the 2,400-board deep search I tried 32 threads, which doubled the failures because job boards started rate-limiting me. 16 threads plus one retry turned out to be the sweet spot, at a minute or two for a full refresh in the background.</p>
+      </div>
+      <div class="note">
+        <h3>Regex false positives</h3>
+        <p>The eligibility rules are pattern matches over free-text job descriptions, and the first versions hid postings they shouldn't have. The word "undergraduate" once tripped a graduation-date rule. Now I test every new rule against a sample of real descriptions before trusting it.</p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="pnext" aria-label="More projects">
+    <a class="btn alt" href="lifetracker.html"><small>← previous</small>LifeTracker</a>
+    <a class="btn alt" href="search.html"><small>next →</small>Search Algorithm Explorer</a>
+  </nav>
+</main>
+<footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
+
+<script src="../site.js"></script>
+<script>
+(function(){
+  // Interest labels expand to search words, like src/options.cpp in the app
+  var INTERESTS = {
+    'Software Engineering': ['software','engineer','developer','sde','swe','programmer','engineering'],
+    'Mobile (iOS / Android)': ['mobile','ios','android','swift','kotlin'],
+    'Machine Learning / AI': ['machine learning','ml','ai','deep learning','nlp','computer vision','llm','applied scientist'],
+    'Data Science / Analytics': ['data','analytics','analyst','data science','data scientist','business intelligence'],
+    'Game Development': ['game','gameplay','unity','unreal','graphics','rendering'],
+    'Robotics / Controls': ['robotics','robot','controls','autonomy','autonomous','perception','mechatronics'],
+    'Quant / Trading': ['quant','quantitative','trading','trader','algorithmic']
+  };
+  var PLACES = {
+    'Vancouver': ['Vancouver','Burnaby','Richmond, BC','Surrey, BC'],
+    'Toronto': ['Toronto','Mississauga','Waterloo'],
+    'Seattle': ['Seattle','Redmond','Bellevue'],
+    'San Francisco': ['San Francisco','Palo Alto','Mountain View','San Jose'],
+    'New York': ['New York']
+  };
+  // Computer Science major rule from src/matcher.cpp
+  var CS_WORDS = ['software','developer','engineer','engineering','programmer','backend','frontend','front-end','back-end','full stack','fullstack','web','mobile','ios','android','cloud','devops','infrastructure','platform','systems','security','data','machine learning','ml','ai','sde','swe','technology','technical','qa','test'];
+  var CS_CATS = ['software','software engineering','ai/ml/data'];
+
+  var L = [
+    {c:'Fernwork', t:'iOS Software Developer Intern', cat:'Software', loc:'Toronto, ON, Canada', terms:['Summer 2027'], deg:["Bachelor's"], sp:'', age:3, isNew:true},
+    {c:'Tidepool Robotics', t:'Robotics Software Co-op', cat:'Software', loc:'Vancouver, BC, Canada', terms:['Summer 2027'], deg:[], sp:'', age:12},
+    {c:'Quill Analytics', t:'Machine Learning Intern', cat:'AI/ML/Data', loc:'Remote in Canada', remote:true, terms:['Summer 2027'], deg:["Bachelor's","Master's"], sp:'', age:5, isNew:true},
+    {c:'Northlight Games', t:'Gameplay Programmer Intern', cat:'Software', loc:'Montreal, QC, Canada', terms:['Summer 2027'], deg:[], sp:'', age:20},
+    {c:'Birchbank', t:'Software Engineering Intern, Payments', cat:'Software', loc:'Toronto, ON, Canada', terms:['Fall 2026'], deg:["Bachelor's"], sp:'', age:8},
+    {c:'Glacier Capital', t:'Quantitative Trading Intern', cat:'Quant', loc:'New York, NY', terms:['Summer 2027'], deg:["Bachelor's"], sp:'Does not offer sponsorship', age:2, isNew:true},
+    {c:'Mossbyte', t:'Full Stack Developer Intern', cat:'Software', loc:'Vancouver, BC, Canada', terms:[], deg:[], sp:'', age:40},
+    {c:'Kelp Systems', t:'Firmware Engineer Intern', cat:'Hardware', loc:'Burnaby, BC, Canada', terms:['Summer 2027'], deg:["Bachelor's"], sp:'', age:15},
+    {c:'Cloudberry', t:'Data Analyst Intern', cat:'AI/ML/Data', loc:'Seattle, WA', terms:['Summer 2027'], deg:[], sp:'Offers sponsorship', age:1, isNew:true},
+    {c:'Harbor Health', t:'Research Scientist Intern, NLP', cat:'AI/ML/Data', loc:'San Francisco, CA', terms:['Summer 2027'], deg:['PhD'], sp:'', age:6},
+    {c:'Sprout Studio', t:'Mobile Developer Co-op (Android)', cat:'Software', loc:'Remote', remote:true, terms:['Winter 2027'], deg:[], sp:'', age:9},
+    {c:'Lumen Silicon', t:'Hardware Verification Intern', cat:'Hardware', loc:'San Jose, CA', terms:['Summer 2027'], deg:["Master's"], sp:'', age:30},
+    {c:'Tidepool Robotics', t:'Perception / Computer Vision Intern', cat:'AI/ML/Data', loc:'Vancouver, BC, Canada', terms:['Summer 2027'], deg:["Bachelor's"], sp:'', age:4, isNew:true},
+    {c:'Quill Analytics', t:'Business Operations Intern', cat:'Other', loc:'Toronto, ON, Canada', terms:['Summer 2027'], deg:[], sp:'', age:50}
+  ];
+
+  var prof = {term:'Summer 2027', ints:['Software Engineering','Mobile (iOS / Android)','Machine Learning / AI'], locs:['Vancouver','Toronto'], remote:true, spons:false};
+  var minScore = 40, open = {};
+
+  function esc(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function hasWord(hay, kw){ return new RegExp('(^|[^a-z0-9])' + esc(kw.toLowerCase()) + '($|[^a-z0-9])').test(hay.toLowerCase()); }
+  function has(hay, s){ return hay.toLowerCase().indexOf(s.toLowerCase()) >= 0; }
+
+  function score(l){
+    var parts = [], reasons = [], warns = [];
+    // 1. term (up to 25)
+    var term = l.terms.length ? (l.terms.indexOf(prof.term) >= 0 ? 25 : 0) : 12;
+    parts.push(['term', term]);
+    if (term === 25) reasons.push(prof.term); else if (!term) warns.push('term: ' + l.terms.join('/'));
+    // 2. relevance to major + interests (up to 40)
+    var hay = l.t + ' ' + l.cat, rel = 0, hits = [];
+    var kws = []; prof.ints.forEach(function(i){ kws = kws.concat(INTERESTS[i]); });
+    for (var k = 0; k < kws.length && hits.length < 4; k++) if (hasWord(hay, kws[k]) && hits.indexOf(kws[k]) < 0) { rel += 14; hits.push(kws[k]); }
+    var majorHits = 0;
+    CS_WORDS.forEach(function(w){ if (hasWord(hay, w) && ++majorHits <= 3) rel += 6; });
+    if (CS_CATS.indexOf(l.cat.toLowerCase()) >= 0) rel += 8;
+    if (!rel) warns.push('no overlap with Computer Science');
+    rel = Math.min(rel, 40);
+    parts.push(['relevance' + (hits.length ? ' (' + hits.join(', ') + ')' : ''), rel]);
+    if (hits.length) reasons.push('matches: ' + hits.join(', '));
+    // 3. location (up to 20)
+    var loc = 0, places = []; prof.locs.forEach(function(p){ places = places.concat(PLACES[p]); });
+    if (places.some(function(p){ return has(l.loc, p); })) { loc = 20; reasons.push(l.loc); }
+    else if (l.remote && prof.remote) { loc = 14; reasons.push('remote'); }
+    else if (has(l.loc, 'Canada')) { loc = 10; reasons.push('Canada'); }
+    else if (!prof.locs.length) { loc = 12; reasons.push('anywhere'); }
+    parts.push(['location', loc]);
+    // 4. degree level
+    var deg = !l.deg.length ? 6 : (l.deg.indexOf("Bachelor's") >= 0 ? 10 : -15);
+    if (deg < 0) warns.push('wants ' + l.deg.join('/'));
+    parts.push(['degree level', deg]);
+    // 5. sponsorship
+    if (prof.spons) {
+      var sp = 0;
+      if (has(l.sp, 'does not offer') || has(l.sp, 'citizenship')) { sp = -30; warns.push('no sponsorship'); }
+      else if (has(l.sp, 'offers')) { sp = 5; reasons.push('sponsors visas'); }
+      parts.push(['sponsorship', sp]);
+    }
+    // 6. freshness (up to 10)
+    var fr = l.age <= 7 ? 10 : l.age <= 30 ? 6 : l.age <= 90 ? 2 : 0;
+    if (l.age <= 7) reasons.push('posted this week');
+    parts.push(['posted ' + (l.age === 1 ? 'yesterday' : l.age + ' days ago'), fr]);
+    var total = parts.reduce(function(s, p){ return s + p[1]; }, 0);
+    return {l: l, s: Math.max(0, Math.min(100, total)), raw: total, parts: parts, reasons: reasons, warns: warns};
+  }
+
+  function color(s){ return s >= 80 ? '#8AD25F' : s >= 60 ? '#B4E58F' : s >= 40 ? '#E6F2A8' : '#FFFFFF'; }
+
+  function render(){
+    var ms = L.map(score).sort(function(a, b){ return b.s - a.s; });
+    var shown = ms.filter(function(m){ return m.s >= minScore; });
+    var newCount = shown.filter(function(m){ return m.l.isNew; }).length;
+    document.getElementById('count').textContent = shown.length + ' of ' + L.length + ' shown' + (newCount ? ' · ' + newCount + ' new' : '');
+    var list = document.getElementById('list');
+    if (!shown.length) { list.innerHTML = '<div class="empty">nothing scores that high, try lowering the minimum</div>'; return; }
+    list.innerHTML = shown.map(function(m){
+      var id = L.indexOf(m.l), l = m.l;
+      var chips = m.reasons.map(function(r){ return '<span>' + r + '</span>'; }).join('') +
+                  m.warns.map(function(w){ return '<span class="warn">⚠ ' + w + '</span>'; }).join('');
+      var brk = open[id] ? '<div class="brk">' + m.parts.map(function(p){ return '<span>' + p[0] + '</span><span>' + (p[1] > 0 ? '+' : '') + p[1] + '</span>'; }).join('') +
+        '<span class="tot">total' + (m.raw !== m.s ? ' (kept between 0 and 100)' : '') + '</span><span class="tot">' + m.s + '</span></div>' : '';
+      return '<button type="button" class="row" data-id="' + id + '" aria-expanded="' + !!open[id] + '"><div class="top">' +
+        '<span class="score" style="background:' + color(m.s) + '">' + m.s + '</span>' +
+        '<span class="who"><b>' + l.t + (l.isNew ? '<span class="new">NEW</span>' : '') + '</b><small>' + l.c + ' · ' + l.loc + '</small></span></div>' +
+        '<div class="why">' + chips + '</div>' + brk + '</button>';
+    }).join('');
+  }
+
+  function toggles(boxId, names, key){
+    var box = document.getElementById(boxId);
+    names.forEach(function(n){
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'tog'; b.textContent = n;
+      b.setAttribute('aria-pressed', prof[key].indexOf(n) >= 0);
+      b.addEventListener('click', function(){
+        var i = prof[key].indexOf(n);
+        if (i >= 0) prof[key].splice(i, 1); else prof[key].push(n);
+        b.setAttribute('aria-pressed', i < 0); render();
+      });
+      box.appendChild(b);
+    });
+  }
+  toggles('ints', Object.keys(INTERESTS), 'ints');
+  toggles('locs', Object.keys(PLACES), 'locs');
+  ['remote','spons'].forEach(function(k){
+    var b = document.getElementById(k);
+    b.addEventListener('click', function(){ prof[k] = !prof[k]; b.setAttribute('aria-pressed', prof[k]); render(); });
+  });
+  document.getElementById('term').addEventListener('change', function(e){ prof.term = e.target.value; render(); });
+  document.getElementById('min').addEventListener('input', function(e){ minScore = +e.target.value; document.getElementById('minv').textContent = minScore; render(); });
+  document.getElementById('seen').addEventListener('click', function(){ L.forEach(function(l){ l.isNew = false; }); render(); });
+  document.getElementById('list').addEventListener('click', function(e){
+    var r = e.target.closest('.row'); if (!r) return;
+    var id = r.dataset.id; open[id] = !open[id]; render();
+    var again = document.querySelector('.row[data-id="' + id + '"]'); if (again) again.focus();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

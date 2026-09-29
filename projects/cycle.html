@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cycle by Nicole Li: a fully offline period tracker for macOS, written in C++20 with SDL2. Health data never leaves your machine.">
+<link rel="icon" href="../figures/idea.png">
+<title>Cycle · Nicole Li</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<style>
+:root{--period:#F2A7B5; --period-edge:#C8697A; --fertile:#D3F0BC; --ovu:#FFE97A}
+.cyc{display:grid; grid-template-columns:1fr 250px; gap:24px; align-items:start}
+.months{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
+.mhead{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+.mhead h4{font:600 18px "Fredoka",sans-serif; margin:0}
+.arrow{font:700 18px "Fredoka",sans-serif; width:34px; height:34px; border-radius:50%; border:2.5px solid var(--line); background:var(--g1); color:var(--ink); cursor:pointer}
+.arrow:focus-visible{outline:3px dashed var(--g5); outline-offset:2px}
+.cal7{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
+.cal7 .dow{font:600 11px "Fredoka",sans-serif; text-align:center; color:var(--ink-soft)}
+.day{aspect-ratio:1; border-radius:10px; border:2px solid var(--g3); background:var(--paper); color:var(--ink); font:600 13px "Fredoka",sans-serif; cursor:pointer; position:relative; padding:0}
+.day:disabled{cursor:default; opacity:.9}
+.day.out{visibility:hidden}
+.day.fertile{background:var(--fertile); border-color:var(--fertile); color:#12281A}
+.day.ovu{background:var(--ovu); border-color:#D9C24E; color:#12281A}
+.day.pred{border:2.5px dashed var(--period-edge); background:var(--paper); color:var(--ink)}
+.day.logged{background:var(--period); border-color:var(--period-edge); color:#12281A}
+.day.today{outline:3px solid var(--line); outline-offset:1px}
+.day:focus-visible{outline:3px dashed var(--g5); outline-offset:1px}
+.arrow.mob{visibility:hidden}
+.legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:13px}
+.legend i{display:inline-block; width:14px; height:14px; border-radius:4px; vertical-align:-2px; margin-right:5px; border:2px solid var(--g3)}
+.side{display:grid; gap:12px}
+.side .ctrl{display:block}
+.side .lbl{display:block; margin-bottom:4px}
+.pred-box{background:var(--g1); border:2.5px solid var(--line); border-radius:16px; padding:14px}
+.pred-box .big2{font:700 24px "Fredoka",sans-serif; line-height:1.2}
+.pred-box p{margin:4px 0 0; font-size:14px; color:var(--ink-soft)}
+.pred-box dl{display:grid; grid-template-columns:1fr auto; gap:3px 10px; margin:10px 0 0; font-size:14px}
+.pred-box dd{margin:0; font-weight:800}
+@media (max-width:760px){
+  .cyc{grid-template-columns:1fr}
+  .months{grid-template-columns:1fr}
+  .months > div:nth-child(2){display:none}
+  .arrow.mob{visibility:visible}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="p-group" viewBox="0 0 241 169"><image href="../figures/group.png" width="241" height="169"/></symbol>
+  <symbol id="p-present" viewBox="0 0 165 276"><image href="../figures/present.png" width="165" height="276"/></symbol>
+  <symbol id="p-idea" viewBox="0 0 127 259"><image href="../figures/idea.png" width="127" height="259"/></symbol>
+</svg>
+<div class="floaters" aria-hidden="true">
+  <span class="s1" style="left:5%;top:16%;background:var(--g3);animation-delay:-2s"></span>
+  <span class="s3" style="left:86%;top:10%;background:var(--g2);animation-delay:-1s;width:80px;height:80px"></span>
+  <span class="s2" style="left:90%;top:62%;background:var(--g4);animation-delay:-8s;width:50px;height:50px"></span>
+</div>
+<canvas id="sparkles" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Site">
+  <ul>
+    <li><a href="../index.html">home</a></li>
+    <li><a href="../index.html#projects">projects</a></li>
+    <li><a href="../index.html#contact">say hi</a></li>
+    <li><button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button></li>
+  </ul>
+</nav>
+
+<main class="wrap">
+  <header class="phero">
+    <div>
+      <a class="back" href="../index.html#projects"><span class="ar">←</span> back to the sticker book</a><br>
+      <span class="eyebrow">C++20 · Mac app · offline</span>
+      <h1>Cycle</h1>
+      <p class="plead">A period tracker for macOS that never touches the internet. No account, no cloud, no analytics. Your cycle data is plain text files on your own Mac, because health data shouldn't have to go anywhere else.</p>
+      <div class="tags"><span>C++20</span><span>SDL2</span><span>CMake</span><span>privacy</span></div>
+      <div class="btns">
+        <a class="btn" href="#demo">try it ✨</a>
+        <a class="btn alt" href="https://github.com/nicole-li7/cycle" target="_blank" rel="noopener">github</a>
+      </div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="pad a"></div>
+      <div class="smk hero-smk" style="width:70%;left:15%;bottom:22%"><svg viewBox="0 0 241 169"><use href="#p-group"/></svg></div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div><h2>try it</h2></div>
+    <div class="demo-card">
+      <h3 class="demo-sub">Log a few periods, watch the prediction learn</h3>
+      <p>There's some sample history already (use ‹ to see earlier months). Click days up to today to log or un-log them, and change the setup answers on the right. The prediction starts from what you told it and moves toward what you actually log.</p>
+      <div class="cyc">
+        <div>
+          <div class="months" id="months"></div>
+          <div class="legend">
+            <span><i style="background:var(--period);border-color:var(--period-edge)"></i>logged</span>
+            <span><i style="border:2px dashed var(--period-edge)"></i>predicted</span>
+            <span><i style="background:var(--fertile);border-color:var(--fertile)"></i>fertile window</span>
+            <span><i style="background:var(--ovu);border-color:#D9C24E"></i>ovulation (est.)</span>
+          </div>
+        </div>
+        <div class="side">
+          <div class="pred-box" aria-live="polite" id="pred"></div>
+          <div class="ctrl"><label class="lbl" for="usual">usual cycle length</label>
+            <select class="sel" id="usual"></select></div>
+          <div class="ctrl"><label class="lbl" for="reg">how regular is it?</label>
+            <select class="sel" id="reg"><option value="0">not sure</option><option value="4">very regular</option><option value="2" selected>somewhat regular</option><option value="1">irregular</option></select></div>
+          <div class="ctrl">
+            <button class="btn small alt" type="button" id="clear">clear log</button>
+            <button class="btn small alt" type="button" id="sample">sample data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">Same prediction rules as the app, ported to JavaScript. In keeping with the app, this demo doesn't save or send anything. Close the tab and it's gone.</p>
+  </section>
+
+  <section>
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div><h2>how it works</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>Your data is just files</h3>
+        <p>Everything lives in <code>~/Library/Application Support/PeriodTracker/</code>: <code>log.csv</code> is one date per line, <code>symptoms.csv</code> holds flow, symptoms and mood, and <code>profile.txt</code> keeps your setup answers. You can read them, back them up, or edit them by hand.</p>
+      </div>
+      <div class="note">
+        <h3>Useful from day one</h3>
+        <p>The first time it opens, it asks a few questions: usual cycle length, period length, how regular you are, your age, when your last period started. Every one is optional. Those answers give it something to predict from before you've logged a single cycle.</p>
+      </div>
+      <div class="note">
+        <h3>Setup answers fade out</h3>
+        <p>The setup answer counts like a few "pretend" cycles. The more regular you said you are, the more it counts. Every real cycle you log takes one away, until the prediction is purely your own data. Without that decay, the setup answer would pull on the average forever.</p>
+      </div>
+      <div class="note">
+        <h3>Only the recent past</h3>
+        <p>Averages use your last 6 cycles, since bodies change. It ignores cycle lengths that can't be right (under 15 or over 60 days), and it doesn't count a period you might still be logging, so a half-finished one doesn't drag the average down.</p>
+      </div>
+      <div class="note">
+        <h3>Honest error bars</h3>
+        <p>Every prediction comes with a ± margin. It starts from how regular you said you were and converges on how much your logged cycles actually vary.</p>
+      </div>
+      <div class="note">
+        <h3>Fertile window</h3>
+        <p>Ovulation is counted back 14 days from the <em>next</em> period rather than forward from the last one, since the phase after ovulation is the more consistent one. The fertile window runs from 5 days before to 1 day after.</p>
+      </div>
+      <div class="note wide">
+        <h3>Symptoms without guesswork</h3>
+        <p>Any day can hold flow, symptoms and mood. A summary screen shows where each symptom tends to fall in your cycle ("typically day 12"). It's read-only on purpose: guessing cycle timing from symptoms would be guesswork, and it has no business quietly moving the dates the app shows you.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="title"><h2>the tricky parts</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>A real, self-contained app</h3>
+        <p>The build produces <code>Period Tracker.app</code> that opens from the Dock like anything else. It's compiled against Homebrew libraries, so a script walks the dependency tree after each build, copies every non-system library into the bundle, rewrites their paths, and re-signs everything. That's 10 libraries, about 5 MB.</p>
+      </div>
+      <div class="note">
+        <h3>The library that wasn't there</h3>
+        <p>Homebrew's "SDL2" turned out to be SDL2 implemented on top of SDL3, which loads <code>libSDL3</code> at runtime with <code>dlopen</code>. It never shows up in the dependency list, so the bundled app broke until I copied it in by hand.</p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="pnext" aria-label="More projects">
+    <a class="btn alt" href="search.html"><small>← previous</small>Search Algorithm Explorer</a>
+    <a class="btn alt" href="lifetracker.html"><small>next →</small>LifeTracker</a>
+  </nav>
+</main>
+<footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
+
+<script src="../site.js"></script>
+<script>
+(function(){
+  var DAY = 864e5, WINDOW = 6, FUTURE = 13, LUTEAL = 14;
+  function mk(y, m, d){ return new Date(y, m, d, 12); }
+  var now = new Date(), TODAY = mk(now.getFullYear(), now.getMonth(), now.getDate());
+  function add(d, n){ return mk(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function key(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function between(a, b){ return Math.round((b - a) / DAY); }
+  function fromKey(k){ var p = k.split('-'); return mk(+p[0], p[1] - 1, +p[2]); }
+
+  var logged = new Set(), viewStart = mk(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  var usual = document.getElementById('usual'), reg = document.getElementById('reg');
+  usual.innerHTML = '<option value="0">not sure</option>' + Array.from({length: 21}, function(_, i){ var v = 21 + i; return '<option value="' + v + '"' + (v === 28 ? ' selected' : '') + '>' + v + ' days</option>'; }).join('');
+
+  function seed(){
+    logged.clear();
+    [[-58, 5], [-30, 5], [-2, 3]].forEach(function(p){ for (var i = 0; i < p[1]; i++) logged.add(key(add(TODAY, p[0] + i))); });
+  }
+
+  // blend(): the setup answer counts as `w` cycles; with w = 0 it drops out
+  function blend(prior, w, obs){
+    if (!obs.length) return prior;
+    var sum = obs.reduce(function(a, b){ return a + b; }, 0);
+    return w <= 0 ? Math.round(sum / obs.length) : Math.round((prior * w + sum) / (w + obs.length));
+  }
+  function sd(v){
+    if (v.length < 2) return 0;
+    var m = v.reduce(function(a, b){ return a + b; }, 0) / v.length;
+    return Math.round(Math.sqrt(v.reduce(function(a, b){ return a + (b - m) * (b - m); }, 0) / v.length));
+  }
+
+  function predict(){
+    var typical = +usual.value, regularity = +reg.value;
+    var strength = regularity || (typical ? 2 : 1);
+    var baseSpread = {4: 2, 2: 4, 1: 7, 0: 5}[regularity];
+    var out = {cycle: typical || 28, period: 5, spread: baseSpread, observed: 0, pred: new Set(), fertile: new Set(), ovu: new Set(), next: null};
+    var days = Array.from(logged).sort().map(fromKey);
+    if (!days.length) return out;
+
+    // group consecutive days into periods
+    var cycles = [];
+    for (var i = 0; i < days.length;) {
+      var len = 1; while (i + len < days.length && between(days[i], days[i + len]) === len) len++;
+      cycles.push({start: days[i], period: len}); i += len;
+    }
+    var lens = [];
+    for (var c = 0; c + 1 < cycles.length; c++) { var L = between(cycles[c].start, cycles[c + 1].start); if (L >= 15 && L <= 60) lens.push(L); }
+    var total = lens.length; lens = lens.slice(-WINDOW);
+    var plens = cycles.filter(function(cy, idx){
+      var last = idx === cycles.length - 1, lastDay = add(cy.start, cy.period - 1);
+      return !(last && between(lastDay, TODAY) <= 1);          // might still be ongoing
+    }).map(function(cy){ return cy.period; }).slice(-WINDOW);
+
+    var w = Math.max(0, strength - total);
+    out.observed = total;
+    out.cycle = blend(typical || 28, w, lens);
+    out.period = blend(5, w, plens);
+    out.spread = lens.length >= 2 ? blend(baseSpread, w, lens.map(function(){ return Math.max(1, sd(lens)); })) : baseSpread;
+    out.spread = Math.min(10, Math.max(1, out.spread));
+
+    var next = add(cycles[cycles.length - 1].start, out.cycle);
+    while (between(next, TODAY) > 0) next = add(next, out.cycle);
+    out.next = next;
+    for (var k = 0; k < FUTURE; k++) {
+      var s = add(next, k * out.cycle);
+      for (var p = 0; p < out.period; p++) out.pred.add(key(add(s, p)));
+      var ov = add(s, -LUTEAL); out.ovu.add(key(ov));
+      for (var f = -5; f <= 1; f++) out.fertile.add(key(add(ov, f)));
+    }
+    return out;
+  }
+
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function month(first, P, idx){
+    var y = first.getFullYear(), m = first.getMonth(), n = new Date(y, m + 1, 0).getDate(), lead = first.getDay();
+    var h = '<div><div class="mhead">' + (idx === 0 ? '<button class="arrow" type="button" data-nav="-1" aria-label="Earlier months">‹</button>' : '<span></span>') +
+      '<h4>' + MONTHS[m] + ' ' + y + '</h4>' + (idx === 1 ? '<button class="arrow" type="button" data-nav="1" aria-label="Later months">›</button>' : '<button class="arrow mob" type="button" data-nav="1" aria-label="Later months">›</button>') + '</div><div class="cal7">';
+    'SMTWTFS'.split('').forEach(function(d){ h += '<span class="dow" aria-hidden="true">' + d + '</span>'; });
+    for (var b = 0; b < lead; b++) h += '<span class="day out"></span>';
+    for (var d = 1; d <= n; d++) {
+      var dt = mk(y, m, d), k = key(dt), cls = ['day'], label = MONTHS[m] + ' ' + d;
+      if (logged.has(k)) { cls.push('logged'); label += ', logged'; }
+      else if (P.pred.has(k)) { cls.push('pred'); label += ', predicted period'; }
+      else if (P.ovu.has(k)) { cls.push('ovu'); label += ', estimated ovulation'; }
+      else if (P.fertile.has(k)) { cls.push('fertile'); label += ', fertile window'; }
+      if (k === key(TODAY)) { cls.push('today'); label += ', today'; }
+      var future = dt > TODAY;
+      h += '<button type="button" class="' + cls.join(' ') + '" data-k="' + k + '"' + (future ? ' disabled' : '') + ' aria-label="' + label + '" aria-pressed="' + logged.has(k) + '">' + d + '</button>';
+    }
+    return h + '</div></div>';
+  }
+
+  function fmtDate(d){ return d.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'}); }
+  function render(){
+    var P = predict();
+    document.getElementById('months').innerHTML = month(viewStart, P, 0) + month(mk(viewStart.getFullYear(), viewStart.getMonth() + 1, 1), P, 1);
+    var box = document.getElementById('pred');
+    if (!P.next) { box.innerHTML = '<div class="big2">nothing logged</div><p>Click a past day to log it. Until then there\'s nothing to anchor a date to, just your setup answers: about ' + P.cycle + '-day cycles.</p>'; return; }
+    var inDays = between(TODAY, P.next);
+    box.innerHTML = '<p>next period</p><div class="big2">' + fmtDate(P.next) + '</div><p>' + (inDays === 0 ? 'today' : 'in ' + inDays + ' day' + (inDays === 1 ? '' : 's')) + ', give or take ' + P.spread + '</p>' +
+      '<dl><dt>average cycle</dt><dd>' + P.cycle + ' days</dd><dt>average period</dt><dd>' + P.period + ' days</dd><dt>based on</dt><dd>' +
+      (P.observed ? P.observed + ' logged cycle' + (P.observed === 1 ? '' : 's') : 'setup answers') + '</dd></dl>';
+  }
+
+  document.getElementById('months').addEventListener('click', function(e){
+    var nav = e.target.closest('[data-nav]');
+    if (nav) { viewStart = mk(viewStart.getFullYear(), viewStart.getMonth() + (+nav.dataset.nav), 1); render(); return; }
+    var b = e.target.closest('.day[data-k]'); if (!b || b.disabled) return;
+    var k = b.dataset.k; if (logged.has(k)) logged.delete(k); else logged.add(k);
+    render();
+    var again = document.querySelector('.day[data-k="' + k + '"]'); if (again) again.focus();
+  });
+  usual.addEventListener('change', render); reg.addEventListener('change', render);
+  document.getElementById('clear').addEventListener('click', function(){ logged.clear(); render(); });
+  document.getElementById('sample').addEventListener('click', function(){ seed(); viewStart = mk(TODAY.getFullYear(), TODAY.getMonth(), 1); render(); });
+  seed(); render();
+})();
+</script>
+</body>
+</html>

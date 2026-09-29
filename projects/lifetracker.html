@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="LifeTracker by Nicole Li: my own Notion. To-dos, weekly schedule, calendar, budget, gym, school and a photo diary in one SwiftUI app.">
+<link rel="icon" href="../figures/idea.png">
+<title>LifeTracker · Nicole Li</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<style>
+/* the mock uses LifeTracker's own palette from Theme.swift */
+.lt{--brand:#E9B8A6; --page:#FFEFEF; --side:#F0EBE3; --bar:#F3D0D7; --hover:#F5EEE6; --tx:#6E5647; --inc:#5E9E7E; --exp:#C8697A; --gcal:#CFE0F0; --peach:#FDD9D8;
+  border:3px solid var(--line); border-radius:18px; overflow:hidden; background:var(--page); color:var(--tx); font-family:-apple-system,"SF Pro Text","Nunito",system-ui,sans-serif; font-size:14.5px; box-shadow:4px 4px 0 var(--ink)}
+.lt-bar{display:flex; align-items:center; gap:7px; padding:9px 12px; background:var(--bar); border-bottom:1.5px solid rgba(110,86,71,.2)}
+.lt-bar i{width:12px; height:12px; border-radius:50%; background:#FF6159} .lt-bar i:nth-child(2){background:#FFBD2E} .lt-bar i:nth-child(3){background:#28C941}
+.lt-bar span{margin-left:auto; margin-right:auto; font-weight:600; font-size:13px; transform:translateX(-24px)}
+.lt-body{display:grid; grid-template-columns:180px 1fr; min-height:440px}
+.lt-side{background:var(--side); padding:10px 8px; display:flex; flex-direction:column; gap:2px}
+.lt-side button{all:unset; box-sizing:border-box; display:flex; gap:9px; align-items:center; padding:7px 10px; border-radius:8px; cursor:pointer; font-size:14px; color:var(--tx)}
+.lt-side button:hover{background:var(--hover)}
+.lt-side button[aria-selected="true"]{background:var(--brand); color:#fff; font-weight:600}
+.lt-side button:focus-visible{outline:2px solid var(--tx)}
+.lt-main{padding:20px 22px; min-width:0}
+.lt-main h4{font-size:24px; font-weight:700; margin:0 0 2px; color:var(--tx); font-family:inherit}
+.lt-main .sub{margin:0 0 14px; font-size:13px; opacity:.8}
+.lt-card{background:#fff; border-radius:12px; padding:12px 14px; box-shadow:0 1px 3px rgba(110,86,71,.15)}
+.lt-card + .lt-card{margin-top:10px}
+.todo{display:flex; gap:10px; align-items:center; padding:6px 0; border-bottom:1px solid var(--hover)}
+.todo:last-child{border-bottom:0}
+.todo input{appearance:none; width:18px; height:18px; border:2px solid var(--brand); border-radius:5px; margin:0; cursor:pointer; display:grid; place-items:center; flex:none}
+.todo input:checked{background:var(--brand)}
+.todo input:checked::after{content:"✓"; color:#fff; font-size:12px; font-weight:800}
+.todo input:checked + span{text-decoration:line-through; opacity:.55}
+.todo input:focus-visible{outline:2px solid var(--tx); outline-offset:2px}
+.addrow{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+.addrow input,.addrow select{font:inherit; color:var(--tx); border:1.5px solid var(--bar); border-radius:8px; padding:5px 9px; background:#fff; min-width:0}
+.addrow input[type=text]{flex:1}
+.addrow button,.lt-btn{font:inherit; font-weight:600; background:var(--brand); color:#fff; border:0; border-radius:8px; padding:5px 14px; cursor:pointer}
+.lt-btn.ghost{background:#fff; color:var(--tx); border:1.5px solid var(--bar)}
+.lt-btn[aria-pressed="true"]{background:var(--brand); color:#fff}
+.week{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px}
+.week .lt-card{padding:8px; min-height:150px; margin:0}
+.week b{display:block; font-size:12.5px; margin-bottom:6px}
+.week .todo{font-size:12px; gap:6px; padding:3px 0; border:0}
+.week .todo input{width:14px; height:14px}
+.rep{font-size:11px; opacity:.7}
+.mcal{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px}
+.mcal .dw{font-size:11px; font-weight:600; text-align:center; opacity:.7}
+.mcal .c{background:#fff; border-radius:8px; min-height:62px; padding:3px 4px; font-size:11px; overflow:hidden}
+.mcal .c.now{outline:2px solid var(--brand)}
+.mcal .c.blank{background:transparent}
+.chip2{display:block; border-radius:4px; padding:0 4px; margin-top:2px; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#4C3D33}
+.chip2.g{background:var(--gcal)} .chip2.w{background:var(--peach)} .chip2.x{background:var(--exp); color:#fff}
+.money{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px}
+.money .lt-card{margin:0; text-align:center}
+.money small{display:block; font-size:12px; opacity:.8}
+.money b{font-size:19px}
+.tx{display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--hover)}
+.tx:last-child{border:0}
+.inc{color:var(--inc); font-weight:700} .exp{color:var(--exp); font-weight:700}
+.gym td,.gym th{padding:5px 8px; text-align:left; font-size:13.5px}
+.gym table{border-collapse:collapse; width:100%}
+.gym tr + tr td{border-top:1px solid var(--hover)}
+.sets{display:flex; gap:5px}
+.sets input{appearance:none; width:20px; height:20px; border-radius:50%; border:2px solid var(--brand); cursor:pointer; margin:0}
+.sets input:checked{background:var(--brand)}
+.sets input:focus-visible{outline:2px solid var(--tx); outline-offset:2px}
+.cls{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+.cls .lt-card{margin:0; border-left:5px solid var(--brand)}
+.cls b{display:block}
+.exam{display:flex; justify-content:space-between; gap:10px; padding:5px 0; border-bottom:1px solid var(--hover)}
+.exam:last-child{border:0}
+.mem{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px}
+.mem .c{aspect-ratio:1; border-radius:8px; background:#fff; font-size:10.5px; padding:3px; position:relative; overflow:hidden; display:grid; place-items:center; color:rgba(110,86,71,.35)}
+.mem .c span{position:absolute; left:4px; top:2px; color:var(--tx); z-index:1; font-weight:600}
+.mem .c img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.mem .c.ph span{color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.mem .blank{background:transparent}
+@media (max-width:760px){
+  .lt-body{grid-template-columns:1fr}
+  .lt-side{flex-direction:row; overflow-x:auto; padding:8px}
+  .lt-side button{white-space:nowrap}
+  .lt-main{padding:14px}
+  .week{grid-template-columns:repeat(2,1fr)}
+  .money{grid-template-columns:repeat(2,1fr)}
+  .cls{grid-template-columns:1fr}
+  .mcal .c{min-height:44px} .chip2{font-size:0; height:5px; padding:0}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="p-plane" viewBox="0 0 204 268"><image href="../figures/plane.png" width="204" height="268"/></symbol>
+  <symbol id="p-present" viewBox="0 0 165 276"><image href="../figures/present.png" width="165" height="276"/></symbol>
+  <symbol id="p-idea" viewBox="0 0 127 259"><image href="../figures/idea.png" width="127" height="259"/></symbol>
+</svg>
+<div class="floaters" aria-hidden="true">
+  <span class="s1" style="left:5%;top:16%;background:var(--g3);animation-delay:-2s"></span>
+  <span class="s3" style="left:86%;top:10%;background:var(--g2);animation-delay:-1s;width:80px;height:80px"></span>
+  <span class="s2" style="left:90%;top:62%;background:var(--g4);animation-delay:-8s;width:50px;height:50px"></span>
+</div>
+<canvas id="sparkles" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Site">
+  <ul>
+    <li><a href="../index.html">home</a></li>
+    <li><a href="../index.html#projects">projects</a></li>
+    <li><a href="../index.html#contact">say hi</a></li>
+    <li><button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button></li>
+  </ul>
+</nav>
+
+<main class="wrap">
+  <header class="phero">
+    <div>
+      <a class="back" href="../index.html#projects"><span class="ar">←</span> back to the sticker book</a><br>
+      <span class="eyebrow">Swift · SwiftUI · SwiftData</span>
+      <h1>LifeTracker</h1>
+      <p class="plead">My own Notion. To-dos, my weekly schedule, calendar, budget, gym plans, classes and a photo diary, all in one native Mac app built on shared data. I use it every day.</p>
+      <div class="tags"><span>Swift</span><span>SwiftUI</span><span>SwiftData</span><span>OAuth / Google Calendar</span></div>
+      <div class="btns">
+        <a class="btn" href="#demo">try it ✨</a>
+        <a class="btn alt" href="https://github.com/nicole-li7/LifeTracker" target="_blank" rel="noopener">github</a>
+      </div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="pad a"></div>
+      <div class="smk hero-smk"><svg viewBox="0 0 204 268"><use href="#p-plane"/></svg></div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div><h2>try it</h2></div>
+    <div class="demo-card">
+      <h3 class="demo-sub">Click around the app</h3>
+      <p>Every page in the sidebar works. Tick off to-dos, add a budget entry, pick a gym day.</p>
+      <div class="lt" id="lt">
+        <div class="lt-bar" aria-hidden="true"><i></i><i></i><i></i><span>LifeTracker</span></div>
+        <div class="lt-body">
+          <div class="lt-side" role="tablist" aria-label="LifeTracker pages" id="ltSide"></div>
+          <div class="lt-main" role="tabpanel" id="ltMain" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">An HTML copy of the app's pages and colors, with sample data. The real thing is SwiftUI on macOS.</p>
+  </section>
+
+  <section>
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div><h2>how it works</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>Seven pages, one set of data</h3>
+        <p>Every page is its own SwiftUI module, but they all sit on shared SwiftData models. That's what makes it feel like one app instead of seven: exams from School and tasks from the Weekly Schedule show up on the Calendar next to regular events.</p>
+      </div>
+      <div class="note">
+        <h3>A week that resets itself</h3>
+        <p>The Weekly Schedule clears itself at midnight every Sunday, so each week starts fresh. Anything marked "repeat" stays put.</p>
+      </div>
+      <div class="note">
+        <h3>Budget with a running balance</h3>
+        <p>Each month has its own income and expenses, and the total balance carries over from month to month, so I always know where I actually stand, not just this month.</p>
+      </div>
+      <div class="note">
+        <h3>Google Calendar sync</h3>
+        <p>It signs in with Google using OAuth (with PKCE) and read-only access, then pulls events from all of my calendars so everything is in one place.</p>
+      </div>
+      <div class="note">
+        <h3>A photo a day</h3>
+        <p>Memories is a monthly grid where each day can hold a photo. Photos live inside the app's own SwiftData store, not scattered around the disk.</p>
+      </div>
+      <div class="note">
+        <h3>Gym templates</h3>
+        <p>Push, Pull and Glutes days, plus Core, are saved templates with sets, reps and weight, so starting a workout is one click.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="title"><h2>the tricky parts</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>The migration that ate my classes</h3>
+        <p>I added one new required field to a SwiftData model, and on the next launch every row of that type was gone. SwiftData rebuilt the table, and the default value only existed in Swift code, so there was nothing to migrate the old rows to. I restored them from a backup with <code>sqlite3</code>, and now every new field is added as optional with a clean accessor on top.</p>
+      </div>
+      <div class="note">
+        <h3>Another app wiped my database</h3>
+        <p>By default, SwiftData apps outside the sandbox all share one file path. One day a macOS system process opened that same file, migrated it to its own schema, and dropped all of LifeTracker's tables. The app now keeps its store in its own folder and makes an automatic backup on every launch and quit.</p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="pnext" aria-label="More projects">
+    <a class="btn alt" href="cycle.html"><small>← previous</small>Cycle</a>
+    <a class="btn alt" href="internscout.html"><small>next →</small>InternScout</a>
+  </nav>
+</main>
+<footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
+
+<script src="../site.js"></script>
+<script>
+(function(){
+  var now = new Date(), Y = now.getFullYear(), M = now.getMonth(), D = now.getDate();
+  function rel(n){ return new Date(Y, M, D + n); }
+  function md(d){ return d.toLocaleDateString('en-US', {month: 'short', day: 'numeric'}); }
+  function money(n){ return (n < 0 ? '-$' : '$') + Math.abs(n).toFixed(2); }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  var todos = [['finish CPSC 221 problem set', false], ['pull day at the gym', true], ['email TA about the midterm', false], ['buy matcha 🍵', false]];
+  var week = {Mon:[['CPSC 213 lab', true], ['laundry', false]], Tue:[['badminton', true]], Wed:[['CPSC 210 project check-in', false], ['groceries', false]],
+              Thu:[['badminton', true]], Fri:[['call home', true]], Sat:[['meal prep', false]], Sun:[['plan next week', true]]};
+  var tx = [['Part-time job', 640, 'in'], ['Rent share', -520, 'out'], ['Groceries', -86.4, 'out'], ['Matcha', -18.75, 'out'], ['Bus pass', -45, 'out']];
+  var carry = 412.5;
+  var gymDay = 'Push';
+  var GYM = {
+    Push:[['Bench press', 3, 8, '85 lb'], ['Shoulder press', 3, 10, '20 lb'], ['Tricep pushdown', 3, 12, '30 lb'], ['Lateral raise', 3, 12, '10 lb']],
+    Pull:[['Lat pulldown', 3, 10, '70 lb'], ['Seated row', 3, 10, '60 lb'], ['Bicep curl', 3, 12, '15 lb'], ['Face pull', 3, 15, '25 lb']],
+    Glutes:[['Hip thrust', 4, 8, '135 lb'], ['Romanian deadlift', 3, 10, '75 lb'], ['Bulgarian split squat', 3, 10, '20 lb'], ['Cable kickback', 3, 12, '15 lb']],
+    Core:[['Plank', 3, '45 s', '—'], ['Dead bug', 3, 12, '—'], ['Cable crunch', 3, 15, '40 lb']]
+  };
+  var gymDone = {};
+  var classes = [['CPSC 210', 'Software Construction', 'Mon Wed Fri · 10:00'], ['CPSC 213', 'Computer Systems', 'Tue Thu · 12:30'],
+                 ['CPSC 221', 'Data Structures & Algorithms', 'Mon Wed · 14:00'], ['MATH 221', 'Linear Algebra', 'Tue Thu · 9:30']];
+  var exams = [['MATH 221 midterm', 6], ['CPSC 213 midterm', 13], ['CPSC 221 midterm', 20], ['CPSC 210 final', 64]];
+
+  var PAGES = [
+    ['todo', '✓', 'To-Do'], ['week', '🗓', 'Weekly Schedule'], ['cal', '📅', 'Calendar'], ['budget', '💰', 'Budget'],
+    ['gym', '🏋️', 'Gym'], ['school', '🎓', 'School'], ['mem', '📷', 'Memories']
+  ];
+  var page = 'todo', side = document.getElementById('ltSide'), main = document.getElementById('ltMain');
+  side.innerHTML = PAGES.map(function(p){ return '<button role="tab" type="button" data-p="' + p[0] + '" aria-selected="' + (p[0] === page) + '"><span aria-hidden="true">' + p[1] + '</span>' + p[2] + '</button>'; }).join('');
+  side.addEventListener('click', function(e){ var b = e.target.closest('[data-p]'); if (!b) return; page = b.dataset.p; show(); });
+
+  function check(label, on, attrs){ return '<label class="todo"><input type="checkbox" ' + attrs + (on ? ' checked' : '') + '><span>' + esc(label) + '</span></label>'; }
+
+  var VIEWS = {
+    todo: function(){
+      return '<h4>To-Do</h4><p class="sub">' + now.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'}) + '</p><div class="lt-card">' +
+        todos.map(function(t, i){ return check(t[0], t[1], 'data-todo="' + i + '"'); }).join('') +
+        '<form class="addrow" id="addTodo"><input type="text" placeholder="add a task…" aria-label="New task"><button>add</button></form></div>';
+    },
+    week: function(){
+      return '<h4>Weekly Schedule</h4><p class="sub">clears Sunday at midnight · ↻ = repeats every week</p><div class="week">' +
+        Object.keys(week).map(function(d){ return '<div class="lt-card"><b>' + d + '</b>' + week[d].map(function(t){ return '<label class="todo"><input type="checkbox"><span>' + esc(t[0]) + (t[1] ? ' <span class="rep" title="repeats">↻</span>' : '') + '</span></label>'; }).join('') + '</div>'; }).join('') + '</div>';
+    },
+    cal: function(){
+      var first = new Date(Y, M, 1).getDay(), n = new Date(Y, M + 1, 0).getDate(), h = '';
+      var ev = {};
+      function put(d, cls, t){ if (d.getMonth() === M) (ev[d.getDate()] = ev[d.getDate()] || []).push('<span class="chip2 ' + cls + '">' + t + '</span>'); }
+      for (var d = 1; d <= n; d++) {
+        var wd = new Date(Y, M, d).getDay();
+        if (wd === 1 || wd === 3 || wd === 5) put(new Date(Y, M, d), 'g', 'CPSC 210');
+        if (wd === 2 || wd === 4) put(new Date(Y, M, d), 'w', 'badminton');
+      }
+      exams.forEach(function(x){ put(rel(x[1]), 'x', x[0]); });
+      put(rel(2), 'g', 'study group');
+      'SMTWTFS'.split('').forEach(function(x){ h += '<span class="dw">' + x + '</span>'; });
+      for (var b = 0; b < first; b++) h += '<div class="c blank"></div>';
+      for (var k = 1; k <= n; k++) h += '<div class="c' + (k === D ? ' now' : '') + '">' + k + (ev[k] || []).slice(0, 2).join('') + '</div>';
+      return '<h4>' + MONTHS[M] + ' ' + Y + '</h4><p class="sub"><span class="chip2 g" style="display:inline">Google Calendar</span> <span class="chip2 w" style="display:inline">weekly schedule</span> <span class="chip2 x" style="display:inline">exams</span></p><div class="mcal">' + h + '</div>';
+    },
+    budget: function(){
+      var inc = 0, out = 0; tx.forEach(function(t){ if (t[1] > 0) inc += t[1]; else out -= t[1]; });
+      return '<h4>Budget</h4><p class="sub">' + MONTHS[M] + ' ' + Y + '</p><div class="money">' +
+        '<div class="lt-card"><small>income</small><b class="inc">' + money(inc) + '</b></div>' +
+        '<div class="lt-card"><small>expenses</small><b class="exp">' + money(out) + '</b></div>' +
+        '<div class="lt-card"><small>this month</small><b>' + money(inc - out) + '</b></div>' +
+        '<div class="lt-card"><small>total balance</small><b>' + money(carry + inc - out) + '</b></div></div>' +
+        '<div class="lt-card">' + tx.map(function(t){ return '<div class="tx"><span>' + esc(t[0]) + '</span><span class="' + (t[1] > 0 ? 'inc' : 'exp') + '">' + (t[1] > 0 ? '+' : '') + money(t[1]) + '</span></div>'; }).join('') +
+        '<form class="addrow" id="addTx"><input type="text" placeholder="what was it?" aria-label="Description" required><input type="number" min="0.01" step="0.01" placeholder="0.00" aria-label="Amount" style="width:90px" required>' +
+        '<select aria-label="Type"><option value="out">expense</option><option value="in">income</option></select><button>add</button></form></div>' +
+        '<p class="sub" style="margin-top:10px">total balance = ' + money(carry) + ' carried over from last month + this month</p>';
+    },
+    gym: function(){
+      var rows = GYM[gymDay].map(function(x, i){
+        var s = ''; for (var k = 0; k < x[1]; k++) { var id = gymDay + i + '-' + k; s += '<input type="checkbox" data-set="' + id + '" aria-label="' + esc(x[0]) + ' set ' + (k + 1) + '"' + (gymDone[id] ? ' checked' : '') + '>'; }
+        return '<tr><td>' + esc(x[0]) + '</td><td>' + x[1] + ' × ' + x[2] + '</td><td>' + x[3] + '</td><td><div class="sets">' + s + '</div></td></tr>';
+      }).join('');
+      return '<h4>Gym</h4><p class="sub">pick a template, tick sets as you go</p><div class="addrow" style="margin:0 0 12px">' +
+        Object.keys(GYM).map(function(g){ return '<button type="button" class="lt-btn ghost" data-gym="' + g + '" aria-pressed="' + (g === gymDay) + '">' + g + '</button>'; }).join('') +
+        '</div><div class="lt-card gym"><table><tr><th>exercise</th><th>sets × reps</th><th>weight</th><th>done</th></tr>' + rows + '</table></div>';
+    },
+    school: function(){
+      return '<h4>School</h4><p class="sub">this term</p><div class="cls">' +
+        classes.map(function(c){ return '<div class="lt-card"><b>' + c[0] + '</b>' + c[1] + '<div class="sub" style="margin:4px 0 0">' + c[2] + '</div></div>'; }).join('') +
+        '</div><div class="lt-card" style="margin-top:12px"><b style="display:block;margin-bottom:4px">Exams &amp; Midterms</b>' +
+        exams.map(function(x){ return '<div class="exam"><span>' + x[0] + '</span><span>' + md(rel(x[1])) + ' · in ' + x[1] + ' days</span></div>'; }).join('') + '</div>';
+    },
+    mem: function(){
+      var first = new Date(Y, M, 1).getDay(), h = '';
+      var photos = {}; photos[Math.max(1, D - 3)] = ['../matcha.jpg', 'matcha break']; photos[Math.max(1, D - 9)] = ['../arena.jpg', 'concert night'];
+      for (var b = 0; b < first; b++) h += '<div class="c blank"></div>';
+      for (var k = 1; k <= D; k++) h += photos[k] ? '<div class="c ph"><span>' + k + '</span><img src="' + photos[k][0] + '" alt="' + photos[k][1] + '"></div>' : '<div class="c"><span>' + k + '</span>+</div>';
+      return '<h4>Memories</h4><p class="sub">one photo a day · ' + MONTHS[M] + '</p><div class="mem">' + h + '</div>';
+    }
+  };
+
+  function show(){
+    side.querySelectorAll('[data-p]').forEach(function(b){ b.setAttribute('aria-selected', b.dataset.p === page); });
+    main.innerHTML = VIEWS[page]();
+  }
+  main.addEventListener('change', function(e){
+    var t = e.target;
+    if (t.dataset.todo) todos[+t.dataset.todo][1] = t.checked;
+    if (t.dataset.set) gymDone[t.dataset.set] = t.checked;
+  });
+  main.addEventListener('click', function(e){
+    var g = e.target.closest('[data-gym]'); if (g) { gymDay = g.dataset.gym; show(); }
+  });
+  main.addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = e.target, ins = f.querySelectorAll('input');
+    if (f.id === 'addTodo') { var v = ins[0].value.trim(); if (v) { todos.push([v, false]); show(); main.querySelector('#addTodo input').focus(); } }
+    if (f.id === 'addTx') {
+      var name = ins[0].value.trim(), amt = parseFloat(ins[1].value);
+      if (name && amt > 0) { tx.push([name, f.querySelector('select').value === 'in' ? amt : -amt]); show(); }
+    }
+  });
+  show();
+})();
+</script>
+</body>
+</html>

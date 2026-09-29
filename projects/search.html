@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Search Algorithm Explorer by Nicole Li: A* and Minimax with alpha-beta pruning written from scratch in C++. Try both in your browser.">
+<link rel="icon" href="../figures/idea.png">
+<title>Search Algorithm Explorer · Nicole Li</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<style>
+.duo{display:grid; grid-template-columns:auto 1fr; gap:26px; align-items:start}
+.puz{display:grid; grid-template-columns:repeat(3,72px); grid-template-rows:repeat(3,72px); gap:8px; padding:10px; background:var(--g2); border:3px solid var(--line); border-radius:18px; position:relative}
+.tile{position:absolute; width:72px; height:72px; display:grid; place-items:center; font:700 30px "Fredoka",sans-serif; color:#12281A; background:#fff; border:3px solid #1F3A2A; border-radius:14px; box-shadow:3px 3px 0 #1F3A2A; cursor:pointer; transition:left .18s ease, top .18s ease}
+.tile.home{background:#B4E58F}
+.tile:focus-visible{outline:3px dashed var(--g5); outline-offset:2px}
+.bars2{display:grid; gap:8px; margin-top:16px}
+.bar2{display:grid; grid-template-columns:150px 1fr; gap:10px; align-items:center; font:600 13.5px "Fredoka",sans-serif}
+.bar2 .track2{height:24px; background:var(--g1); border:2px solid var(--line); border-radius:8px; overflow:hidden; position:relative}
+.bar2 .fill{height:100%; background:var(--g4); transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.bar2 .num{position:absolute; left:8px; top:1px; font-size:12.5px; color:#12281A; white-space:nowrap}
+.ttt{display:grid; grid-template-columns:repeat(3,76px); gap:8px; padding:10px; background:var(--g2); border:3px solid var(--line); border-radius:18px}
+.ttt button{width:76px; height:76px; font:700 38px "Fredoka",sans-serif; background:#fff; color:#12281A; border:3px solid #1F3A2A; border-radius:14px; cursor:pointer}
+.ttt button:disabled{cursor:default}
+.ttt button.o{color:#3E8E2A}
+.ttt button.win{background:#FFE97A}
+.ttt button:focus-visible{outline:3px dashed var(--g5); outline-offset:2px}
+.msg{font:600 18px "Fredoka",sans-serif; margin:0 0 12px; min-height:1.4em}
+@media (max-width:760px){
+  .duo{grid-template-columns:1fr; justify-items:center}
+  .duo > div:last-child{justify-self:stretch}
+  .bar2{grid-template-columns:110px 1fr}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="p-road" viewBox="0 0 235 246"><image href="../figures/road.png" width="235" height="246"/></symbol>
+  <symbol id="p-present" viewBox="0 0 165 276"><image href="../figures/present.png" width="165" height="276"/></symbol>
+  <symbol id="p-idea" viewBox="0 0 127 259"><image href="../figures/idea.png" width="127" height="259"/></symbol>
+  <symbol id="p-research" viewBox="0 0 162 238"><image href="../figures/research.png" width="162" height="238"/></symbol>
+</svg>
+<div class="floaters" aria-hidden="true">
+  <span class="s1" style="left:5%;top:16%;background:var(--g3);animation-delay:-2s"></span>
+  <span class="s3" style="left:86%;top:10%;background:var(--g2);animation-delay:-1s;width:80px;height:80px"></span>
+  <span class="s2" style="left:90%;top:62%;background:var(--g4);animation-delay:-8s;width:50px;height:50px"></span>
+</div>
+<canvas id="sparkles" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Site">
+  <ul>
+    <li><a href="../index.html">home</a></li>
+    <li><a href="../index.html#projects">projects</a></li>
+    <li><a href="../index.html#contact">say hi</a></li>
+    <li><button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button></li>
+  </ul>
+</nav>
+
+<main class="wrap">
+  <header class="phero">
+    <div>
+      <a class="back" href="../index.html#projects"><span class="ar">←</span> back to the sticker book</a><br>
+      <span class="eyebrow">C++ · game AI</span>
+      <h1>Search Algorithm Explorer</h1>
+      <p class="plead">A* and Minimax written from scratch in C++, then pointed at a pile of puzzles and board games. I wanted to see for myself how much a good heuristic actually saves, and what it costs.</p>
+      <div class="tags"><span>C++</span><span>A*</span><span>Minimax</span><span>alpha-beta pruning</span><span>game AI</span></div>
+      <div class="btns">
+        <a class="btn" href="#demo">try it ✨</a>
+        <a class="btn alt" href="https://github.com/nicole-li7/astar" target="_blank" rel="noopener">A* repo</a>
+        <a class="btn alt" href="https://github.com/nicole-li7/minimax" target="_blank" rel="noopener">Minimax repo</a>
+      </div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="pad a"></div>
+      <div class="smk hero-smk"><svg viewBox="0 0 235 246"><use href="#p-road"/></svg></div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div><h2>try it</h2></div>
+
+    <div class="demo-card">
+      <h3 class="demo-sub">A* on the 8-puzzle</h3>
+      <p>Get the tiles back in order, 1 to 8. Click a tile next to the gap to slide it, or shuffle and let A* find the shortest fix. Then switch the heuristic and watch how many positions it has to look at.</p>
+      <div class="duo">
+        <div class="puz" id="puz" role="group" aria-label="8-puzzle board"></div>
+        <div>
+          <div class="ctrl"><span class="lbl">heuristic</span>
+            <button class="tog" type="button" data-h="0">none (blind)</button>
+            <button class="tog" type="button" data-h="1">misplaced tiles</button>
+            <button class="tog" type="button" data-h="2" aria-pressed="true">Manhattan</button>
+            <button class="tog" type="button" data-h="3">greedy (3× Manhattan)</button>
+          </div>
+          <div class="ctrl" style="margin-top:14px">
+            <button class="btn small alt" type="button" id="shuffle">shuffle</button>
+            <button class="btn small" type="button" id="solve">solve with A*</button>
+            <button class="btn small alt" type="button" id="compare">compare all four</button>
+          </div>
+          <div class="stat" id="pstat" aria-live="polite"></div>
+          <div class="bars2" id="bars"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <h3 class="demo-sub">Minimax on tic-tac-toe</h3>
+      <p>You're X. The computer searches every possible game from here to the end, so the best you can do is a draw. Alpha-beta pruning lets it skip branches that can't change its answer.</p>
+      <div class="duo">
+        <div class="ttt" id="ttt" role="grid" aria-label="Tic-tac-toe board"></div>
+        <div>
+          <p class="msg" id="tmsg" aria-live="polite">your move</p>
+          <div class="ctrl">
+            <button class="btn small" type="button" id="tnew">new game</button>
+            <button class="btn small alt" type="button" id="tfirst">let the computer go first</button>
+          </div>
+          <div class="stat" id="tstat" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">Both demos are JavaScript ports of the same algorithms, made so they run right here. The C++ originals are in the repos.</p>
+  </section>
+
+  <section>
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div><h2>how it works</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>One A*, five puzzles</h3>
+        <p>The solver doesn't know what a puzzle is. Each puzzle is a node class that can list its neighbours, say whether it's the goal, and estimate how far it is from the goal. The same <code>astarSolve</code> works on the 8-puzzle, the 15-puzzle, Klotski (Huarong Pass), Missionaries &amp; Cannibals and 8-Queens.</p>
+      </div>
+      <div class="note">
+        <h3>The heuristic is the whole game</h3>
+        <p>A* always expands the position with the lowest <em>moves so far + estimated moves left</em>. For sliding puzzles the estimate is Manhattan distance: how many rows and columns each tile is away from home.</p>
+        <p>It never overestimates, so the answer is guaranteed to be the shortest. A weaker estimate like "misplaced tiles" is still correct but searches far more.</p>
+      </div>
+      <div class="note">
+        <h3>Accuracy vs speed</h3>
+        <p>Multiply the estimate by 3 and A* turns greedy. It rushes toward whatever looks closest and finishes after looking at a tiny fraction of the positions, but the path it finds is often a few moves longer. Try "compare all four" above to see it.</p>
+      </div>
+      <div class="note">
+        <h3>Minimax with alpha-beta</h3>
+        <p>Minimax assumes both players play perfectly: I pick the move with the best score, knowing you'll pick the reply with the worst score for me. Alpha-beta keeps track of the best score each side is already guaranteed and stops exploring a branch the moment it can't beat that.</p>
+      </div>
+      <div class="note">
+        <h3>Move ordering</h3>
+        <p>Pruning works best when the strongest moves are tried first. Before searching, every move gets a quick one-step evaluation and the list is sorted best-first. That order decides how much of the tree gets skipped.</p>
+      </div>
+      <div class="note">
+        <h3>Four games, one engine</h3>
+        <p>The minimax engine only sees an abstract <code>GameState</code>: its legal moves, what a move leads to, and a score. Tic-tac-toe, Gomoku, Othello and Chess each plug into it, with a small Windows GUI to play against it.</p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="pnext" aria-label="More projects">
+    <a class="btn alt" href="internscout.html"><small>← previous</small>InternScout</a>
+    <a class="btn alt" href="cycle.html"><small>next →</small>Cycle</a>
+  </nav>
+</main>
+<footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
+
+<script src="../site.js"></script>
+<script>
+(function(){
+  // ---------- 8-puzzle + A* ----------
+  var GOAL = [1,2,3,4,5,6,7,8,0], CELL = 80, PAD = 10;
+  var board = GOAL.slice(), hSel = 2, busy = false;
+  var puz = document.getElementById('puz'), pstat = document.getElementById('pstat'), bars = document.getElementById('bars');
+  var tiles = {};
+  var H_NAMES = ['none (blind)','misplaced tiles','Manhattan','greedy (3× Manhattan)'];
+
+  for (var n = 1; n <= 8; n++) {
+    var t = document.createElement('button');
+    t.type = 'button'; t.className = 'tile'; t.textContent = n;
+    t.addEventListener('click', (function(v){ return function(){ if(!busy) slide(v); }; })(n));
+    puz.appendChild(t); tiles[n] = t;
+  }
+  function draw(){
+    for (var i = 0; i < 9; i++) {
+      var v = board[i]; if (!v) continue;
+      var el = tiles[v];
+      el.style.left = (PAD + (i % 3) * CELL) + 'px';
+      el.style.top  = (PAD + Math.floor(i / 3) * CELL) + 'px';
+      el.classList.toggle('home', GOAL[i] === v);
+      el.setAttribute('aria-label', 'tile ' + v);
+    }
+  }
+  function neighbours(i){
+    var r = Math.floor(i / 3), c = i % 3, out = [];
+    if (r > 0) out.push(i - 3); if (r < 2) out.push(i + 3);
+    if (c > 0) out.push(i - 1); if (c < 2) out.push(i + 1);
+    return out;
+  }
+  function slide(v){
+    var i = board.indexOf(v), z = board.indexOf(0);
+    if (neighbours(z).indexOf(i) < 0) return;
+    board[z] = v; board[i] = 0; draw();
+  }
+
+  function heuristic(s, kind){
+    if (kind === 0) return 0;
+    var h = 0;
+    for (var i = 0; i < 9; i++) {
+      var v = s[i]; if (!v) continue;
+      if (kind === 1) { if (v !== i + 1) h++; }
+      else { var g = v - 1; h += Math.abs(Math.floor(g / 3) - Math.floor(i / 3)) + Math.abs(g % 3 - i % 3); }
+    }
+    return kind === 3 ? h * 3 : h;
+  }
+
+  // small binary heap ordered by f, then h
+  function Heap(){ this.a = []; }
+  Heap.prototype.less = function(x, y){ return x.f < y.f || (x.f === y.f && x.h < y.h); };
+  Heap.prototype.push = function(n){ var a = this.a; a.push(n); var i = a.length - 1;
+    while (i > 0) { var p = (i - 1) >> 1; if (!this.less(a[i], a[p])) break; var t = a[i]; a[i] = a[p]; a[p] = t; i = p; } };
+  Heap.prototype.pop = function(){ var a = this.a, top = a[0], last = a.pop();
+    if (a.length) { a[0] = last; var i = 0;
+      for (;;) { var l = 2*i+1, r = l+1, m = i;
+        if (l < a.length && this.less(a[l], a[m])) m = l;
+        if (r < a.length && this.less(a[r], a[m])) m = r;
+        if (m === i) break; var t = a[i]; a[i] = a[m]; a[m] = t; i = m; } }
+    return top; };
+
+  function astar(start, kind){
+    var goalKey = GOAL.join(''), best = new Map(), open = new Heap(), expanded = 0;
+    var h0 = heuristic(start, kind);
+    open.push({s: start, g: 0, h: h0, f: h0, parent: null});
+    best.set(start.join(''), 0);
+    while (open.a.length) {
+      var cur = open.pop(), key = cur.s.join('');
+      if (cur.g > best.get(key)) continue;          // stale entry
+      if (key === goalKey) {
+        var path = []; for (var p = cur; p; p = p.parent) path.unshift(p.s);
+        return {path: path, expanded: expanded};
+      }
+      expanded++;
+      var z = cur.s.indexOf(0), ns = neighbours(z);
+      for (var k = 0; k < ns.length; k++) {
+        var nx = cur.s.slice(); nx[z] = nx[ns[k]]; nx[ns[k]] = 0;
+        var nk = nx.join(''), g = cur.g + 1;
+        if (best.has(nk) && best.get(nk) <= g) continue;
+        best.set(nk, g);
+        var h = heuristic(nx, kind);
+        open.push({s: nx, g: g, h: h, f: g + h, parent: cur});
+      }
+    }
+    return null;
+  }
+
+  function solvable(s){
+    var inv = 0, t = s.filter(function(v){ return v; });
+    for (var i = 0; i < t.length; i++) for (var j = i + 1; j < t.length; j++) if (t[i] > t[j]) inv++;
+    return inv % 2 === 0;
+  }
+  function shuffle(){
+    // random walk from the solved board, so every shuffle is solvable
+    var s = GOAL.slice(), prev = -1;
+    for (var m = 0; m < 60; m++) {
+      var z = s.indexOf(0), ns = neighbours(z).filter(function(i){ return i !== prev; });
+      var pick = ns[Math.floor(Math.random() * ns.length)];
+      s[z] = s[pick]; s[pick] = 0; prev = z;
+    }
+    if (s.join('') === GOAL.join('')) return shuffle();
+    board = s; draw(); pstat.innerHTML = ''; bars.innerHTML = '';
+  }
+
+  function setBusy(b){ busy = b; ['shuffle','solve','compare'].forEach(function(id){ document.getElementById(id).disabled = b; }); }
+  function fmt(n){ return n.toLocaleString('en-US'); }
+
+  function animate(path, done){
+    var i = 1;
+    (function step(){
+      if (i >= path.length) { done(); return; }
+      board = path[i++].slice(); draw(); setTimeout(step, 230);
+    })();
+  }
+
+  function solve(){
+    if (busy) return;
+    if (board.join('') === GOAL.join('')) { pstat.innerHTML = '<span>already solved, shuffle first 🙂</span>'; return; }
+    setBusy(true); pstat.innerHTML = '<span>thinking…</span>';
+    setTimeout(function(){
+      var t0 = performance.now(), r = astar(board.slice(), hSel), ms = performance.now() - t0;
+      pstat.innerHTML = '<span><b>' + (r.path.length - 1) + '</b> moves</span><span><b>' + fmt(r.expanded) + '</b> positions looked at</span><span><b>' + ms.toFixed(0) + '</b> ms</span>';
+      animate(r.path, function(){ setBusy(false); });
+    }, 30);
+  }
+
+  function compare(){
+    if (busy) return;
+    if (board.join('') === GOAL.join('')) { pstat.innerHTML = '<span>already solved, shuffle first 🙂</span>'; return; }
+    setBusy(true); pstat.innerHTML = '<span>running all four…</span>';
+    setTimeout(function(){
+      var rs = [0,1,2,3].map(function(k){ return astar(board.slice(), k); });
+      var max = Math.max.apply(null, rs.map(function(r){ return r.expanded; }));
+      var shortest = Math.min.apply(null, rs.map(function(r){ return r.path.length - 1; }));
+      bars.innerHTML = rs.map(function(r, k){
+        var len = r.path.length - 1, extra = len > shortest ? ' (' + (len - shortest) + ' extra)' : '';
+        return '<div class="bar2"><span>' + H_NAMES[k] + '</span><div class="track2"><div class="fill" style="width:0"></div><span class="num">' +
+          fmt(r.expanded) + ' positions · ' + len + ' moves' + extra + '</span></div></div>';
+      }).join('');
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        bars.querySelectorAll('.fill').forEach(function(f, k){ f.style.width = Math.max(2, rs[k].expanded / max * 100) + '%'; });
+      }); });
+      pstat.innerHTML = '<span>same board, four heuristics. Shorter bar = less searching.</span>';
+      setBusy(false);
+    }, 30);
+  }
+
+  document.querySelectorAll('[data-h]').forEach(function(b){
+    b.addEventListener('click', function(){
+      hSel = +b.dataset.h;
+      document.querySelectorAll('[data-h]').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    });
+  });
+  document.getElementById('shuffle').addEventListener('click', function(){ if(!busy) shuffle(); });
+  document.getElementById('solve').addEventListener('click', solve);
+  document.getElementById('compare').addEventListener('click', compare);
+  draw(); shuffle();
+
+  // ---------- tic-tac-toe + minimax ----------
+  var LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  var cells = [], tb = Array(9).fill(''), over = false, nodes = 0;
+  var ttt = document.getElementById('ttt'), tmsg = document.getElementById('tmsg'), tstat = document.getElementById('tstat');
+  for (var c = 0; c < 9; c++) {
+    var b = document.createElement('button'); b.type = 'button';
+    b.setAttribute('aria-label', 'square ' + (c + 1) + ', empty');
+    b.addEventListener('click', (function(i){ return function(){ play(i); }; })(c));
+    ttt.appendChild(b); cells.push(b);
+  }
+  function winner(s){
+    for (var i = 0; i < 8; i++) { var l = LINES[i]; if (s[l[0]] && s[l[0]] === s[l[1]] && s[l[1]] === s[l[2]]) return {p: s[l[0]], line: l}; }
+    return null;
+  }
+  function moves(s){ var m = []; for (var i = 0; i < 9; i++) if (!s[i]) m.push(i); return m; }
+  // score from O's (the computer's) point of view; quicker wins score higher
+  function evaluate(s, depth){
+    var w = winner(s);
+    if (w) return w.p === 'O' ? 10 - depth : depth - 10;
+    var sc = 0;   // non-terminal: count lines each side could still win
+    LINES.forEach(function(l){
+      var o = 0, x = 0; l.forEach(function(i){ if (s[i] === 'O') o++; else if (s[i] === 'X') x++; });
+      if (!x && o) sc += o; if (!o && x) sc -= x;
+    });
+    return sc / 10;
+  }
+  function ordered(s, ms, maximizing, depth){
+    return ms.map(function(m){ s[m] = maximizing ? 'O' : 'X'; var v = evaluate(s, depth + 1); s[m] = ''; return {m: m, v: v}; })
+      .sort(function(a, b){ return maximizing ? b.v - a.v : a.v - b.v; })
+      .map(function(x){ return x.m; });
+  }
+  function alphabeta(s, depth, alpha, beta, maximizing, prune){
+    nodes++;
+    var ms = moves(s);
+    if (winner(s) || !ms.length) return evaluate(s, depth);
+    if (prune) ms = ordered(s, ms, maximizing, depth);
+    var best = maximizing ? -Infinity : Infinity;
+    for (var i = 0; i < ms.length; i++) {
+      s[ms[i]] = maximizing ? 'O' : 'X';
+      var v = alphabeta(s, depth + 1, alpha, beta, !maximizing, prune);
+      s[ms[i]] = '';
+      if (maximizing) { if (v > best) best = v; if (v > alpha) alpha = v; }
+      else { if (v < best) best = v; if (v < beta) beta = v; }
+      if (prune && beta <= alpha) break;
+    }
+    return best;
+  }
+  function bestMove(s, prune){
+    nodes = 0;
+    var ms = ordered(s, moves(s), true, 0), best = ms[0], bestV = -Infinity;
+    for (var i = 0; i < ms.length; i++) {
+      s[ms[i]] = 'O';
+      var v = alphabeta(s, 1, prune ? bestV : -Infinity, Infinity, false, prune);
+      s[ms[i]] = '';
+      if (v > bestV) { bestV = v; best = ms[i]; }
+    }
+    return {move: best, nodes: nodes};
+  }
+  function render(){
+    var w = winner(tb);
+    cells.forEach(function(b, i){
+      b.textContent = tb[i]; b.className = tb[i] === 'O' ? 'o' : '';
+      b.disabled = over || !!tb[i];
+      b.setAttribute('aria-label', 'square ' + (i + 1) + ', ' + (tb[i] || 'empty'));
+      if (w && w.line.indexOf(i) >= 0) b.classList.add('win');
+    });
+  }
+  function checkEnd(){
+    var w = winner(tb);
+    if (w) { over = true; tmsg.textContent = w.p === 'X' ? 'you won?! that should be impossible 👀' : 'the computer wins this one'; }
+    else if (!moves(tb).length) { over = true; tmsg.textContent = 'draw! the best anyone can do 🤝'; }
+    render(); return over;
+  }
+  function aiTurn(){
+    tmsg.textContent = 'thinking…';
+    setTimeout(function(){
+      var r = bestMove(tb.slice(), true), plain = bestMove(tb.slice(), false);
+      tb[r.move] = 'O';
+      tstat.innerHTML = '<span>with pruning: <b>' + fmt(r.nodes) + '</b> positions</span><span>without: <b>' + fmt(plain.nodes) + '</b></span>' +
+        '<span>skipped <b>' + Math.floor(100 - r.nodes / plain.nodes * 100) + '%</b></span>';
+      if (!checkEnd()) tmsg.textContent = 'your move';
+    }, 250);
+  }
+  function play(i){
+    if (over || tb[i]) return;
+    tb[i] = 'X'; render();
+    if (!checkEnd()) { cells.forEach(function(b){ b.disabled = true; }); aiTurn(); }
+  }
+  function reset(aiFirst){
+    tb = Array(9).fill(''); over = false; tstat.innerHTML = ''; tmsg.textContent = 'your move'; render();
+    if (aiFirst) { cells.forEach(function(b){ b.disabled = true; }); aiTurn(); }
+  }
+  document.getElementById('tnew').addEventListener('click', function(){ reset(false); });
+  document.getElementById('tfirst').addEventListener('click', function(){ reset(true); });
+  render();
+})();
+</script>
+</body>
+</html>
