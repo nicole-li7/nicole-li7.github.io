@@ -86,6 +86,8 @@ main{position:relative; z-index:1}
 .hero .squiggle{position:relative; display:inline-block; z-index:0}
 .hero .squiggle::after{content:""; position:absolute; left:-4px; right:-4px; bottom:6px; height:.35em; background:var(--g4); z-index:-1; border-radius:6px; transform:rotate(-1deg)}
 .role{font-family:"Fredoka",sans-serif; font-size:clamp(20px,3vw,26px); font-weight:500; color:var(--ink-soft); margin:14px 0 0; min-height:1.4em}
+.role .typed{color:var(--ink); border-right:3px solid var(--g5); padding-right:3px; animation:caret .8s step-end infinite}
+@keyframes caret{50%{border-color:transparent}}
 .lead{max-width:48ch; margin:18px 0 26px}
 .btns{display:flex; flex-wrap:wrap; gap:12px}
 .btn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:17px; text-decoration:none; padding:11px 22px; border:3px solid var(--line); border-radius:16px; background:var(--g4); color:#12281A; box-shadow:var(--shadow); transition:transform .15s, box-shadow .15s}
@@ -106,7 +108,6 @@ main{position:relative; z-index:1}
 @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px) rotate(-3deg)}}
 .stage .buddy{width:30%; left:-8%; bottom:8%; animation:sway 5s ease-in-out infinite}
 @keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-.badge{display:inline-flex; align-items:center; gap:8px; margin-top:22px; font-family:"Fredoka",sans-serif; font-weight:600; font-size:14px; background:var(--paper); border:3px solid var(--line); border-radius:999px; padding:6px 16px 6px 10px; transform:rotate(1.5deg); box-shadow:3px 3px 0 var(--ink)}
 .mascot-note{font-size:14px; color:var(--ink-soft); text-align:center; margin-top:6px; font-style:italic}
 
 /* section titles */
@@ -304,14 +305,13 @@ footer{text-align:center; font-size:14px; color:var(--ink-soft); padding-block:2
     <div>
       <span class="eyebrow">UBC computer science · vancouver</span>
       <h1>hi, i'm <span class="squiggle">Nicole</span> <span class="wave">👋</span></h1>
-      <p class="role">i make things i wish existed</p>
+      <p class="role">i make <span class="typed" id="typed">things i wish existed</span></p>
       <p class="lead">Computer science student at the University of British Columbia who likes shipping small, polished apps for real life. An all-in-one iOS planner, search algorithms written from scratch in C++, and a privacy-first period tracker so far. Looking for a summer 2027 internship.</p>
       <div class="btns">
         <a class="btn" href="#projects">see my stuff ✨</a>
         <button class="btn alt resume-btn" type="button">resume</button>
         <a class="btn alt" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
       </div>
-      <div class="badge">🥉 3rd place · UBC Amazon Robotics Hackathon</div>
     </div>
     <div>
       <div class="stage" id="stage" role="img" aria-label="A little green figure researching on a laptop. Click for a good idea." tabindex="0">
@@ -455,6 +455,18 @@ footer{text-align:center; font-size:14px; color:var(--ink-soft); padding-block:2
     root.setAttribute('data-theme', next); paint();
     try{ localStorage.setItem('theme', next); }catch(e){}
   });
+
+  // typed roles
+  var roles = ['things i wish existed'];
+  var el = document.getElementById('typed'), ri = 0, ci = roles[0].length, del = false;
+  function tick(){
+    var word = roles[ri];
+    if(!del){ ci++; if(ci > word.length){ del = true; return setTimeout(tick, 1600); } }
+    else { ci--; if(ci < 0){ del = false; ri = (ri+1) % roles.length; ci = 0; } }
+    el.textContent = roles[ri].slice(0, Math.max(ci,0));
+    setTimeout(tick, del ? 45 : 90);
+  }
+  if(!reduce) setTimeout(tick, 1600);
 
   // hero: click for a good idea
   var st = document.getElementById('stage');
