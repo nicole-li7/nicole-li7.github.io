@@ -7,30 +7,30 @@
 <link rel="icon" href="../figures/idea.png">
 <title>InternScout · Nicole Li</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
 <link rel="stylesheet" href="../style.css">
 <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <style>
 .is{display:grid; grid-template-columns:290px 1fr; gap:22px; align-items:start}
 .prof{background:var(--g1); border:2.5px solid var(--line); border-radius:16px; padding:14px}
-.prof h4{font:600 17px "Fredoka",sans-serif; margin:0 0 10px}
+.prof h4{font:600 17px "Nunito",sans-serif; margin:0 0 10px}
 .prof .ctrl{margin-bottom:12px}
 .prof .ctrl + .ctrl{margin-top:0}
 .prof .lbl{width:100%}
 .prof .tog{background:var(--paper)}
 .prof .tog[aria-pressed="true"]{background:var(--g4)}
 .fixed{font-size:13.5px; color:var(--ink-soft); margin:4px 0 0}
-.toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:12px; font:600 14px "Fredoka",sans-serif}
+.toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:12px; font:600 14px "Nunito",sans-serif}
 .list{display:grid; gap:8px}
 .row{display:block; width:100%; text-align:left; font:inherit; color:var(--ink); background:var(--paper); border:2.5px solid var(--line); border-radius:14px; padding:10px 12px; cursor:pointer; transition:transform .15s}
 .row:hover{transform:translateX(3px)}
 .row:focus-visible{outline:3px dashed var(--g5); outline-offset:2px}
 .row .top{display:flex; gap:12px; align-items:center}
-.score{flex:none; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font:700 17px "Fredoka",sans-serif; border:2.5px solid #1F3A2A; color:#12281A}
+.score{flex:none; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font:700 17px "Nunito",sans-serif; border:2.5px solid #3B2A2C; color:#3B1A24}
 .who{min-width:0; flex:1}
-.who b{font:600 16px "Fredoka",sans-serif; display:block; line-height:1.25}
+.who b{font:600 16px "Nunito",sans-serif; display:block; line-height:1.25}
 .who small{color:var(--ink-soft); font-size:13.5px}
-.new{font:700 11px "Fredoka",sans-serif; background:#FFE97A; color:#12281A; border:2px solid #1F3A2A; border-radius:999px; padding:0 7px; margin-left:6px; vertical-align:2px}
+.new{font:700 11px "Nunito",sans-serif; background:#FFE97A; color:#3B1A24; border:2px solid #3B2A2C; border-radius:999px; padding:0 7px; margin-left:6px; vertical-align:2px}
 .why{display:flex; flex-wrap:wrap; gap:5px; margin-top:7px}
 .why span{font-size:12px; font-weight:600; border-radius:999px; padding:1px 8px; background:var(--g1); border:1.5px solid var(--g3)}
 .why span.warn{background:transparent; border:1.5px dashed #C8697A; color:var(--ink)}
@@ -260,7 +260,7 @@
     return {l: l, s: Math.max(0, Math.min(100, total)), raw: total, parts: parts, reasons: reasons, warns: warns};
   }
 
-  function color(s){ return s >= 80 ? '#8AD25F' : s >= 60 ? '#B4E58F' : s >= 40 ? '#E6F2A8' : '#FFFFFF'; }
+  function color(s){ return s >= 80 ? '#F4AFC0' : s >= 60 ? '#F8C8D4' : s >= 40 ? '#FCE3EA' : '#FFFFFF'; }
 
   function render(){
     var ms = L.map(score).sort(function(a, b){ return b.s - a.s; });

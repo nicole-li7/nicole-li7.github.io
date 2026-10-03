@@ -7,26 +7,26 @@
 <link rel="icon" href="../figures/idea.png">
 <title>Cycle · Nicole Li</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
 <link rel="stylesheet" href="../style.css">
 <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <style>
-:root{--period:#F2A7B5; --period-edge:#C8697A; --fertile:#D3F0BC; --ovu:#FFE97A}
+:root{--period:#F2A7B5; --period-edge:#C8697A; --fertile:#E4DCF6; --ovu:#FFE97A}
 .cyc{display:grid; grid-template-columns:1fr 250px; gap:24px; align-items:start}
 .months{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
 .mhead{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
-.mhead h4{font:600 18px "Fredoka",sans-serif; margin:0}
-.arrow{font:700 18px "Fredoka",sans-serif; width:34px; height:34px; border-radius:50%; border:2.5px solid var(--line); background:var(--g1); color:var(--ink); cursor:pointer}
+.mhead h4{font:600 18px "Nunito",sans-serif; margin:0}
+.arrow{font:700 18px "Nunito",sans-serif; width:34px; height:34px; border-radius:50%; border:2.5px solid var(--line); background:var(--g1); color:var(--ink); cursor:pointer}
 .arrow:focus-visible{outline:3px dashed var(--g5); outline-offset:2px}
 .cal7{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
-.cal7 .dow{font:600 11px "Fredoka",sans-serif; text-align:center; color:var(--ink-soft)}
-.day{aspect-ratio:1; border-radius:10px; border:2px solid var(--g3); background:var(--paper); color:var(--ink); font:600 13px "Fredoka",sans-serif; cursor:pointer; position:relative; padding:0}
+.cal7 .dow{font:600 11px "Nunito",sans-serif; text-align:center; color:var(--ink-soft)}
+.day{aspect-ratio:1; border-radius:10px; border:2px solid var(--g3); background:var(--paper); color:var(--ink); font:600 13px "Nunito",sans-serif; cursor:pointer; position:relative; padding:0}
 .day:disabled{cursor:default; opacity:.9}
 .day.out{visibility:hidden}
-.day.fertile{background:var(--fertile); border-color:var(--fertile); color:#12281A}
-.day.ovu{background:var(--ovu); border-color:#D9C24E; color:#12281A}
+.day.fertile{background:var(--fertile); border-color:var(--fertile); color:#3B1A24}
+.day.ovu{background:var(--ovu); border-color:#D9C24E; color:#3B1A24}
 .day.pred{border:2.5px dashed var(--period-edge); background:var(--paper); color:var(--ink)}
-.day.logged{background:var(--period); border-color:var(--period-edge); color:#12281A}
+.day.logged{background:var(--period); border-color:var(--period-edge); color:#3B1A24}
 .day.today{outline:3px solid var(--line); outline-offset:1px}
 .day:focus-visible{outline:3px dashed var(--g5); outline-offset:1px}
 .arrow.mob{visibility:hidden}
@@ -36,7 +36,7 @@
 .side .ctrl{display:block}
 .side .lbl{display:block; margin-bottom:4px}
 .pred-box{background:var(--g1); border:2.5px solid var(--line); border-radius:16px; padding:14px}
-.pred-box .big2{font:700 24px "Fredoka",sans-serif; line-height:1.2}
+.pred-box .big2{font:700 24px "Nunito",sans-serif; line-height:1.2}
 .pred-box p{margin:4px 0 0; font-size:14px; color:var(--ink-soft)}
 .pred-box dl{display:grid; grid-template-columns:1fr auto; gap:3px 10px; margin:10px 0 0; font-size:14px}
 .pred-box dd{margin:0; font-weight:800}

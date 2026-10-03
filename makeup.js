@@ -72,7 +72,7 @@
   var camera = new THREE.PerspectiveCamera(38, 1, .1, 200);
 
   function lin(c){ var col = new THREE.Color(c); return col.convertSRGBToLinear(); }
-  function mat(c, o){ o = o || {}; return new THREE.MeshStandardMaterial({color: lin(c), flatShading: o.smooth ? false : true, roughness: o.rough != null ? o.rough : .7, metalness: o.metal || 0,
+  function mat(c, o){ o = o || {}; return new THREE.MeshStandardMaterial({color: lin(c), flatShading: !!o.flat, roughness: o.rough != null ? o.rough : .6, metalness: o.metal || 0, envMapIntensity: o.env != null ? o.env : .45,
     transparent: !!o.opacity, opacity: o.opacity || 1, depthWrite: o.opacity ? false : true, side: o.side || THREE.FrontSide}); }
   function mesh(geo, m, x, y, z){ var me = new THREE.Mesh(geo, m); me.position.set(x || 0, y || 0, z || 0); me.castShadow = true; me.receiveShadow = true; return me; }
   var M = {
@@ -80,11 +80,22 @@
     silver: mat(0xD9DCE3, {metal: .75, rough: .28}), rose: mat(0xE8C6B8, {metal: .55, rough: .3}), cream: mat(0xFFF8EE, {rough: .6}),
     berry: mat(0x7A1E2C, {rough: .5}), satin: mat(0x8E2337, {rough: .35}), red: mat(0xC92D42, {rough: .35}), leaf: mat(0x2F6B3A, {rough: .6}),
     beige: mat(0xE9CBB1, {rough: .55}), nude: mat(0xF1DCCB, {rough: .6}), glass: mat(0xFAD3DC, {opacity: .5, rough: .05, side: THREE.DoubleSide}),
-    liquid: mat(0xF7A9BC, {opacity: .7, rough: .1}), gold: mat(0xD9B45A, {metal: .7, rough: .3})
+    liquid: mat(0xF7A9BC, {opacity: .7, rough: .1}), gold: mat(0xD9B45A, {metal: .8, rough: .25}), seed: mat(0xFFE8A3, {rough: .4})
   };
 
-  scene.add(new THREE.HemisphereLight(0xFFFFFF, lin(0xB89A9A), .85));
-  var sun = new THREE.DirectionalLight(0xFFFFFF, .75); sun.position.set(6, 12, 8); sun.castShadow = true;
+  (function(){
+    var env = new THREE.Scene(), sky = new THREE.SphereGeometry(20, 32, 16), cols = [];
+    for (var i = 0; i < sky.attributes.position.count; i++) { var y = sky.attributes.position.getY(i) / 20, c = new THREE.Color(0xFFF4F1).lerp(new THREE.Color(0xC9A7A9), Math.max(0, -y)); cols.push(c.r, c.g, c.b); }
+    sky.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+    env.add(new THREE.Mesh(sky, new THREE.MeshBasicMaterial({side: THREE.BackSide, vertexColors: true})));
+    [[0, 14, 4, 16, 8], [-14, 6, 6, 6, 10], [14, 7, -4, 6, 10]].forEach(function(b){   // soft boxes
+      var box = new THREE.Mesh(new THREE.PlaneGeometry(b[3], b[4]), new THREE.MeshBasicMaterial({color: 0xFFFFFF, side: THREE.DoubleSide}));
+      box.position.set(b[0], b[1], b[2]); box.lookAt(0, 0, 0); env.add(box);
+    });
+    var pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(env, .02).texture; pm.dispose();
+  })();
+  scene.add(new THREE.HemisphereLight(0xFFFFFF, lin(0xB89A9A), .5));
+  var sun = new THREE.DirectionalLight(0xFFFFFF, .62); sun.position.set(6, 12, 8); sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   var sc = sun.shadow.camera; sc.left = -11; sc.right = 11; sc.top = 11; sc.bottom = -11; sc.near = 1; sc.far = 40;
   scene.add(sun);
@@ -111,13 +122,15 @@
     return s;
   }
   function slab(w, d, r, h, bevel){   // rounded box lying flat, bottom at y = 0
-    var g = new THREE.ExtrudeGeometry(rr(w, d, r), {depth: h, bevelEnabled: !!bevel, bevelThickness: bevel || 0, bevelSize: bevel || 0, bevelSegments: 1, curveSegments: 4});
+    var bv = bevel != null ? bevel : Math.min(.03, h / 3);   // every edge gets a soft rounded bevel
+    var g = new THREE.ExtrudeGeometry(rr(w - 2 * bv, d - 2 * bv, Math.max(.01, r - bv)), {depth: Math.max(.001, h - 2 * bv), bevelEnabled: bv > 0, bevelThickness: bv, bevelSize: bv, bevelSegments: 4, curveSegments: 14});
+    g.translate(0, 0, bv);
     g.rotateX(-Math.PI / 2); return g;
   }
   function ring(w, d, r, t, h){   // rounded-rectangle wall of thickness t
     var s = rr(w, d, r), hole = rr(w - 2 * t, d - 2 * t, Math.max(.01, r - t));
     s.holes.push(hole);
-    var g = new THREE.ExtrudeGeometry(s, {depth: h, bevelEnabled: false, curveSegments: 5});
+    var g = new THREE.ExtrudeGeometry(s, {depth: h, bevelEnabled: false, curveSegments: 14});
     g.rotateX(-Math.PI / 2); return g;
   }
   function planarUV(g, w, h){   // map a flat shape's x/y to 0..1 texture coordinates
@@ -176,7 +189,7 @@
   stripeTex.wrapS = stripeTex.wrapT = THREE.RepeatWrapping;
   var stripeMat = new THREE.MeshStandardMaterial({map: stripeTex, roughness: .7});
   function stripedPouch(w, h, d){
-    var g = new THREE.BoxGeometry(w, h, d, 4, 3, 3), p = g.attributes.position;
+    var g = new THREE.BoxGeometry(w, h, d, 14, 10, 10), p = g.attributes.position;
     for (var i = 0; i < p.count; i++) {   // puff it up a little
       var x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 1 + .12 * (1 - Math.abs(y) / (h / 2));
       p.setX(i, x * (1 + .04 * (1 - Math.abs(y) / (h / 2)))); p.setZ(i, z * k);
@@ -196,7 +209,7 @@
   // heart charm where the logo would be
   var charm = new THREE.Group(); charm.position.set(0, 1.55, BD / 2 + .08); bag.add(charm);
   charm.add(mesh(new THREE.BoxGeometry(.5, .32, .04), M.pinkD, 0, -.02, -.02));
-  [-1, 1].forEach(function(s){ charm.add(mesh(new THREE.IcosahedronGeometry(.075, 0), M.silver, s * .055, 0, .03)); });
+  [-1, 1].forEach(function(s){ charm.add(mesh(new THREE.SphereGeometry(.075, 16, 12), M.silver, s * .055, 0, .03)); });
   var tip = mesh(new THREE.ConeGeometry(.1, .14, 4), M.silver, 0, -.08, .03); tip.rotation.z = Math.PI; charm.add(tip);
 
   // the lid: upper clear tier + pink top, hinged along the back of the middle band
@@ -215,7 +228,7 @@
   function ellipse(rx, ry){ var s = new THREE.Shape(); s.absellipse(0, 0, rx, ry, 0, Math.PI * 2, false, 0); return s; }
   var mirror = new THREE.Group(), mirrorInner = new THREE.Group(); mirror.add(mirrorInner);
   mirrorInner.position.y = 2.9;    // oval centre height when the mirror stands on its handle tip
-  var ovalFrame = mesh(new THREE.ExtrudeGeometry(ellipse(ORX, ORY), {depth: .16, bevelEnabled: true, bevelThickness: .04, bevelSize: .05, bevelSegments: 1, curveSegments: 30}), M.rose, 0, 0, -.08);
+  var ovalFrame = mesh(new THREE.ExtrudeGeometry(ellipse(ORX, ORY), {depth: .16, bevelEnabled: true, bevelThickness: .05, bevelSize: .06, bevelSegments: 5, curveSegments: 72}), M.rose, 0, 0, -.08);
   mirrorInner.add(ovalFrame);
   // front: the glass, showing the intro
   var mirrorTex = null, glass = null;
@@ -224,32 +237,35 @@
   var rimShape = ellipse(.98, 1.22); rimShape.holes.push(ellipse(.74, .95));
   back.add(mesh(new THREE.ShapeGeometry(rimShape, 30), M.cream));
   var panel = mesh(new THREE.ShapeGeometry(ellipse(.75, .96), 30), M.berry, 0, 0, -.005); back.add(panel);
+  // a piped meringue swirl: a lathe with ridges that gets narrower toward the tip
+  var SWIRL = (function(){ var pts = []; for (var k = 0; k <= 16; k++) { var t = k / 16; pts.push(new THREE.Vector2((.095 * (1 - t * .92)) * (1 + .12 * Math.sin(t * 22)), t * .15)); } return new THREE.LatheGeometry(pts, 14); })();
   for (var i = 0; i < 18; i++) {   // piped cream swirls
-    var a = i / 18 * Math.PI * 2, sw = mesh(new THREE.ConeGeometry(.085, .12, 6), M.cream, Math.cos(a) * .87, Math.sin(a) * 1.09, .05);
-    sw.rotation.x = Math.PI / 2; back.add(sw);
+    var a = i / 18 * Math.PI * 2, sw = mesh(SWIRL, M.cream, Math.cos(a) * .87, Math.sin(a) * 1.09, .02);
+    sw.rotation.x = Math.PI / 2; sw.rotation.y = i; back.add(sw);
   }
   for (var j = 0; j < 8; j++) {   // strawberries
     var b = (j + .5) / 8 * Math.PI * 2, berry = new THREE.Group(); berry.position.set(Math.cos(b) * .86, Math.sin(b) * 1.07, .08);
     berry.rotation.z = b + Math.PI / 2;
-    var body2 = mesh(new THREE.IcosahedronGeometry(.11, 0), M.red); body2.scale.set(.9, 1.25, .8); berry.add(body2);
-    var cap = mesh(new THREE.ConeGeometry(.08, .06, 5), M.leaf, 0, .13, 0); berry.add(cap);
+    var body2 = mesh(new THREE.SphereGeometry(.11, 18, 14), M.red); body2.scale.set(.9, 1.3, .8); berry.add(body2);
+    for (var sd = 0; sd < 7; sd++) { var sa = sd / 7 * Math.PI * 2; berry.add(mesh(new THREE.SphereGeometry(.012, 6, 4), M.seed, Math.cos(sa) * .07, Math.sin(sd * 1.7) * .06, .075)); }
+    for (var lf = 0; lf < 5; lf++) { var leaf = mesh(new THREE.ConeGeometry(.035, .1, 4), M.leaf, 0, .14, 0); leaf.rotation.z = Math.PI / 2 + lf / 5 * Math.PI * 2; leaf.position.x = Math.cos(lf / 5 * Math.PI * 2) * .04; leaf.position.y = .135 + Math.sin(lf / 5 * Math.PI * 2) * .02; berry.add(leaf); }
     back.add(berry);
   }
-  var cameo = mesh(new THREE.ExtrudeGeometry(ellipse(.3, .38), {depth: .05, bevelEnabled: true, bevelThickness: .02, bevelSize: .03, bevelSegments: 1, curveSegments: 20}), M.silver, 0, -.03, 0);
+  var cameo = mesh(new THREE.ExtrudeGeometry(ellipse(.3, .38), {depth: .05, bevelEnabled: true, bevelThickness: .025, bevelSize: .03, bevelSegments: 4, curveSegments: 48}), M.silver, 0, -.03, 0);
   back.add(cameo);
   var face = mesh(new THREE.ShapeGeometry(ellipse(.22, .29), 20), mat(0xEDEFF4, {rough: .4}), 0, -.03, .085); back.add(face);
   function bow(m, s, x, y, z){
     var g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s);
     [-1, 1].forEach(function(k){
-      var loop = mesh(new THREE.TorusGeometry(.22, .075, 5, 10), m, k * .22, 0, 0); loop.scale.set(1.15, .7, .6); loop.rotation.z = k * .25; g.add(loop);
+      var loop = mesh(new THREE.TorusGeometry(.22, .075, 12, 28), m, k * .22, 0, 0); loop.scale.set(1.15, .7, .6); loop.rotation.z = k * .25; g.add(loop);
       var tail = mesh(new THREE.BoxGeometry(.13, .5, .04), m, k * .14, -.32, 0); tail.rotation.z = k * .35; g.add(tail);
     });
-    g.add(mesh(new THREE.IcosahedronGeometry(.1, 0), m)); return g;
+    g.add(mesh(new THREE.SphereGeometry(.1, 16, 12), m)); return g;
   }
   back.add(bow(M.silver, .55, 0, .46, .06));
   mirrorInner.add(bow(M.satin, 1.3, 0, -ORY - .12, 0));   // the big satin bow at the neck
   var handleProfile = [[.0, 0], [.1, .05], [.13, .25], [.09, .55], [.11, .8], [.07, 1.15], [.1, 1.35], [.12, 1.48], [.0, 1.5]].map(function(p){ return new THREE.Vector2(p[0], p[1]); });
-  var mhandle = mesh(new THREE.LatheGeometry(handleProfile, 10), M.rose, 0, -ORY - 1.62, 0); mirrorInner.add(mhandle);
+  var mhandle = mesh(new THREE.LatheGeometry(handleProfile, 32), M.rose, 0, -ORY - 1.62, 0); mirrorInner.add(mhandle);
 
   function drawMirror(ctx, w, h, T){
     ctx.save();
@@ -458,14 +474,282 @@
     }, focus: {cam: [0, 2.4, 5.4], look: [0, 1.8, 0]}};
   }
 
+  // ---------- products that write, smear, paint and pat onto a card ----------
+  var CW = 3.6, CD = 2.5, TW = 1600, TH = Math.round(1600 * CD / CW), CARD_Z = CD / 2 + .65;
+  function roundedBox(w, h, d, r){
+    var g = new THREE.BoxGeometry(w, h, d, 10, 10, 10), p = g.attributes.position, v = new THREE.Vector3(), c = new THREE.Vector3();
+    var ix = w / 2 - r, iy = h / 2 - r, iz = d / 2 - r;
+    for (var i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i);
+      c.set(Math.max(-ix, Math.min(ix, v.x)), Math.max(-iy, Math.min(iy, v.y)), Math.max(-iz, Math.min(iz, v.z)));
+      v.sub(c); if (v.lengthSq() > 0) v.normalize().multiplyScalar(r); v.add(c); p.setXYZ(i, v.x, v.y, v.z);
+    }
+    g.computeVertexNormals(); return g;
+  }
+  function lathe(profile, seg){ return new THREE.LatheGeometry(profile.map(function(q){ return new THREE.Vector2(q[0], q[1]); }), seg || 40); }
+  function swatchCard(draw){
+    var g = new THREE.Group();
+    g.add(mesh(slab(CW + .14, CD + .14, .16, .05), M.cream));
+    var T = texture(TW, TH, draw), s = surface(flatPlane(CW, CD), T); s.position.y = .057; g.add(s);
+    g.position.z = CARD_Z; g.visible = false; return {group: g, T: T};
+  }
+  function onCard(px, py){ return new THREE.Vector3((px / TW - .5) * CW, .06, (py / TH - .5) * CD + CARD_Z); }
+  function seg(o, a, b){ return Math.max(0, Math.min(1, (o - a) / (b - a))); }
+  function smoothstep(x){ return x * x * (3 - 2 * x); }
+  function paper(ctx, w, h){
+    ctx.fillStyle = '#FFFBF6'; roundRect(ctx, 0, 0, w, h, 40); ctx.fill();
+    ctx.strokeStyle = 'rgba(217,166,140,.45)'; ctx.lineWidth = 6; roundRect(ctx, 22, 22, w - 44, h - 44, 26); ctx.stroke();
+  }
+  function placeTool(tool, rot, tipLocal, target){   // move a tilted tool so its tip lands on target
+    tool.rotation.copy(rot);
+    var off = tipLocal.clone().applyEuler(rot);
+    tool.position.copy(target).sub(off);
+  }
+  function linkSpots(ctx, T, d, y, style){   // the links, drawn as little pills you can click
+    var x = 110;
+    d.links.forEach(function(l, i){
+      ctx.font = '800 40px Nunito'; var label = l.text + (i ? '' : ' →'), w = ctx.measureText(label).width + 52;
+      if (style) style(ctx, x, y, w, i); else { ctx.fillStyle = i ? '#FFFFFF' : '#F4AFC0'; roundRect(ctx, x, y - 44, w, 64, 32); ctx.fill(); ctx.strokeStyle = '#3B2A2C'; ctx.lineWidth = 3; ctx.stroke(); }
+      ctx.fillStyle = '#3B2A2C'; ctx.textAlign = 'left'; ctx.fillText(label, x + 26, y);
+      T.hot.push({x: x, y: y - 44, w: w, h: 64, action: {href: l.href, ext: l.ext}});
+      x += w + 22;
+    });
+  }
+
+  // the lipstick uncaps itself and writes the project out by hand
+  function lipstick(key){
+    var d = DATA[key], g = new THREE.Group(), ink = '#B23A5C';
+    var stick = new THREE.Group(); g.add(stick);
+    stick.add(mesh(new THREE.CylinderGeometry(.21, .21, .5, 48), M.rose, 0, .25, 0));
+    [.06, .44].forEach(function(y){ var r2 = mesh(new THREE.TorusGeometry(.212, .01, 8, 48), M.gold, 0, y, 0); r2.rotation.x = Math.PI / 2; stick.add(r2); });
+    stick.add(mesh(new THREE.CylinderGeometry(.168, .168, .2, 48), M.gold, 0, .6, 0));
+    var bullet = new THREE.Group(); bullet.position.y = .55; stick.add(bullet);
+    var bg = new THREE.CylinderGeometry(.13, .13, .42, 40, 8), bp = bg.attributes.position;
+    for (var i = 0; i < bp.count; i++) { var y = bp.getY(i); if (y > .06) bp.setY(i, y - (bp.getX(i) + .13) * .62 * ((y - .06) / .15)); }   // the slanted tip
+    bg.translate(0, .21, 0); bg.computeVertexNormals();
+    bullet.add(mesh(bg, mat(0xB23A5C, {rough: .3, env: .6})));
+    var capG = new THREE.Group(); g.add(capG);
+    capG.add(mesh(new THREE.CylinderGeometry(.215, .215, .66, 48), M.rose, 0, .33, 0));
+    var band = mesh(new THREE.TorusGeometry(.216, .018, 8, 48), mat(0xF4AFC0, {rough: .4}), 0, .05, 0); band.rotation.x = Math.PI / 2; capG.add(band);
+    var card = swatchCard(function(ctx, w, h, T){
+      paper(ctx, w, h);
+      var p = card ? card.p || 0 : 0;
+      ctx.fillStyle = ink; ctx.shadowColor = 'rgba(178,58,92,.35)'; ctx.shadowBlur = 3;
+      // lay out every line first, then write as many characters as the progress allows
+      var runs = [];
+      ctx.font = '700 150px Caveat'; runs.push({t: d.title, x: 110, y: 205, f: '700 150px Caveat'});
+      ctx.font = '600 58px Caveat'; lines(ctx, d.desc, w - 220).forEach(function(l, i){ runs.push({t: l, x: 110, y: 320 + i * 66, f: '600 58px Caveat'}); });
+      var ly = 320 + lines(ctx, d.desc, w - 220).length * 66 + 50;
+      runs.push({t: 'made with: ' + d.chips.join(' · '), x: 110, y: ly, f: '600 54px Caveat'});
+      var total = runs.reduce(function(s2, r){ return s2 + r.t.length; }, 0), left = Math.floor(p * total), tip = null;
+      runs.forEach(function(r){
+        if (left <= 0) return;
+        var part = r.t.slice(0, left); left -= r.t.length;
+        ctx.font = r.f; ctx.textAlign = 'left'; ctx.fillText(part, r.x, r.y);
+        tip = {x: r.x + ctx.measureText(part).width, y: r.y - 14};
+      });
+      ctx.shadowBlur = 0;
+      if (p >= .999) {
+        linkSpots(ctx, T, d, ly + 120, function(ctx2, x, y, w2){ ctx2.strokeStyle = ink; ctx2.lineWidth = 5; ctx2.beginPath(); ctx2.ellipse(x + w2 / 2, y - 14, w2 / 2 + 6, 46, -.03, 0, Math.PI * 2); ctx2.stroke(); });
+        ctx.font = '700 70px Caveat'; ctx.fillStyle = ink; ctx.fillText('♡', w - 190, h - 90);
+      }
+      if (card) card.tip = tip || {x: 110, y: 190};
+    });
+    g.add(card.group);
+    var idleRot = new THREE.Euler(0, 0, 0), writeRot = new THREE.Euler(-.5, 0, .55), tip = new THREE.Vector3(-.11, 0, 0), last = -1;
+    return {group: g, dur: 7, open: function(o){
+      var show = smoothstep(seg(o, 0, .1)); card.group.visible = show > 0; card.group.scale.setScalar(.3 + .7 * show);
+      // cap off and laid down at the corner of the card
+      var c = smoothstep(seg(o, .04, .14));
+      capG.position.set(c * 1.45, .5 + Math.sin(c * Math.PI) * .8 + c * (-.5 + .27), c * -.85); capG.rotation.z = c * Math.PI / 2;
+      // twist the bullet up
+      var tw = smoothstep(seg(o, .12, .2)); bullet.position.y = .55 + tw * .26; bullet.rotation.y = tw * 4;
+      tip.y = bullet.position.y + .42;
+      var wr = seg(o, .24, .96);
+      if (Math.abs(wr - last) > .002 || wr === 0 || wr === 1) { card.p = wr; card.T.redraw(); last = wr; }
+      var mv = smoothstep(seg(o, .18, .24));
+      if (mv <= 0) { stick.rotation.copy(idleRot); stick.position.set(0, 0, 0); return; }
+      var target = onCard(card.tip.x, card.tip.y), wob = Math.sin(o * 220) * .015;
+      target.x += wob; target.y += .01 + (o > .96 ? (o - .96) * 8 : 0);
+      var rot = new THREE.Euler(writeRot.x * mv, 0, writeRot.z * mv);
+      var pos = new THREE.Vector3(); placeTool(stick, rot, tip, target); pos.copy(stick.position);
+      stick.position.lerpVectors(new THREE.Vector3(0, 0, 0), pos, mv);
+    }, focus: {cam: [0, 5.3, 1.6 + CARD_Z], look: [0, .2, CARD_Z + .22]}};
+  }
+
+  // the liquid blush dots onto the card, then smears out, and the words show up in the smear
+  function liquidBlush(key){
+    var d = DATA[key], g = new THREE.Group();
+    g.add(mesh(roundedBox(.52, .78, .34, .1), M.glass, 0, .39, 0));
+    g.add(mesh(roundedBox(.42, .6, .25, .08), mat(0xE46F82, {rough: .25}), 0, .34, 0));
+    var capG = new THREE.Group(); capG.position.y = .78; g.add(capG);
+    capG.add(mesh(new THREE.CylinderGeometry(.12, .13, .62, 40), M.rose, 0, .31, 0));
+    capG.add(mesh(new THREE.CylinderGeometry(.022, .022, .55, 12), M.cream, 0, -.27, 0));
+    var foot = mesh(new THREE.SphereGeometry(.1, 20, 14), mat(0xE46F82, {rough: .3}), 0, -.6, 0); foot.scale.set(.85, 1.5, .45); capG.add(foot);
+    var DOTS = [[420, 560], [800, 520], [1180, 580]];
+    function smearPath(t){ return {x: 260 + t * 1080, y: 560 + Math.sin(t * 5) * 60}; }
+    var card = swatchCard(function(ctx, w, h, T){
+      paper(ctx, w, h);
+      var p = card ? card.p || 0 : 0, dots = seg(p, 0, .33), sm = seg(p, .33, .75), tx = seg(p, .68, 1);
+      // the smear: lots of soft blobs laid along the path as far as the wand has dragged
+      ctx.save();
+      for (var k = 0; k <= 80 * sm; k++) {
+        var q = smearPath(k / 80), r = 250 + Math.sin(k * .7) * 30;
+        var gr = ctx.createRadialGradient(q.x, q.y, 10, q.x, q.y, r); gr.addColorStop(0, 'rgba(232,112,132,.22)'); gr.addColorStop(1, 'rgba(232,112,132,0)');
+        ctx.fillStyle = gr; ctx.fillRect(q.x - r, q.y - r, r * 2, r * 2);
+      }
+      DOTS.forEach(function(dt2, i){
+        var a = seg(dots, i / 3, (i + .6) / 3); if (!a) return;
+        var r = 70 * a * (1 - sm * .6);
+        ctx.fillStyle = 'rgba(228,96,120,' + (.95 - sm * .5) + ')'; ctx.beginPath(); ctx.ellipse(dt2[0], dt2[1], r, r * .85, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.ellipse(dt2[0] - r * .3, dt2[1] - r * .3, r * .25, r * .15, -.5, 0, Math.PI * 2); ctx.fill();
+      });
+      if (sm > 0) { ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 10; for (var s3 = -3; s3 <= 3; s3++) { ctx.beginPath(); for (var k2 = 0; k2 <= 40 * sm; k2++) { var q2 = smearPath(k2 / 40); k2 ? ctx.lineTo(q2.x, q2.y + s3 * 55) : ctx.moveTo(q2.x, q2.y + s3 * 55); } ctx.stroke(); } }
+      ctx.restore();
+      if (tx > 0) {
+        ctx.globalAlpha = tx;
+        ctx.fillStyle = '#FFFFFF'; ctx.shadowColor = 'rgba(140,40,60,.35)'; ctx.shadowBlur = 12;
+        ctx.font = 'italic 700 120px Fraunces'; ctx.textAlign = 'center'; ctx.fillText(d.title, w / 2, 300);
+        ctx.shadowBlur = 0; ctx.fillStyle = '#5A2230'; ctx.font = '600 44px Nunito';
+        var y = para(ctx, d.desc, w / 2, 410, w - 360, 58, 'center');
+        ctx.font = '800 36px Nunito'; ctx.fillStyle = '#8E2337'; ctx.fillText(d.chips.join('  ·  ').toUpperCase(), w / 2, y + 40);
+        ctx.globalAlpha = 1;
+        if (tx >= .999) linkSpots(ctx, T, d, h - 110);
+      }
+      var tipAt = p < .33 ? DOTS[Math.min(2, Math.floor(dots * 3))] : null;
+      if (card) card.tip = tipAt ? {x: tipAt[0], y: tipAt[1], down: (dots * 3) % 1 > .35} : (sm < 1 ? (function(){ var q = smearPath(sm); return {x: q.x, y: q.y, down: true}; })() : {x: 1340, y: 560, down: false});
+    });
+    g.add(card.group);
+    var tipL = new THREE.Vector3(0, -.75, 0), rot = new THREE.Euler(-.45, 0, -.35), last = -1;
+    return {group: g, dur: 6.5, open: function(o){
+      var show = smoothstep(seg(o, 0, .1)); card.group.visible = show > 0; card.group.scale.setScalar(.3 + .7 * show);
+      var pr = seg(o, .2, .97);
+      if (Math.abs(pr - last) > .002 || pr === 0 || pr === 1) { card.p = pr; card.T.redraw(); last = pr; }
+      var up = smoothstep(seg(o, .06, .2));
+      if (up <= 0) { capG.position.set(0, .78, 0); capG.rotation.set(0, 0, 0); return; }
+      var target = onCard(card.tip.x, card.tip.y); target.y += card.tip.down ? .02 : .35;
+      var held = new THREE.Vector3(); var r2 = new THREE.Euler(rot.x * up, 0, rot.z * up);
+      placeTool(capG, r2, tipL, target); held.copy(capG.position);
+      capG.position.lerpVectors(new THREE.Vector3(0, .78 + up * .9, 0), held, smoothstep(seg(o, .12, .2)));
+    }, focus: {cam: [0, 5.3, 1.6 + CARD_Z], look: [0, .2, CARD_Z + .22]}};
+  }
+
+  // the nail polish paints glossy strokes, and the text appears in the polish
+  function nailPolish(key){
+    var d = DATA[key], g = new THREE.Group(), polish = '#9B3F66';
+    g.add(mesh(lathe([[0, 0], [.34, 0], [.42, .08], [.44, .3], [.38, .5], [.2, .58], [.14, .62], [0, .62]]), M.glass));
+    g.add(mesh(lathe([[0, .02], [.3, .02], [.37, .1], [.39, .3], [.33, .46], [0, .48]]), mat(0x9B3F66, {rough: .15, env: 1.2})));
+    var capG = new THREE.Group(); capG.position.y = .62; g.add(capG);
+    capG.add(mesh(new THREE.CylinderGeometry(.13, .15, .72, 40), mat(0x2B2226, {rough: .15, env: 1.2}), 0, .36, 0));
+    var ringG = mesh(new THREE.TorusGeometry(.15, .015, 8, 40), M.gold, 0, .02, 0); ringG.rotation.x = Math.PI / 2; capG.add(ringG);
+    capG.add(mesh(new THREE.CylinderGeometry(.02, .02, .5, 10), M.cream, 0, -.25, 0));
+    capG.add(mesh(roundedBox(.13, .2, .04, .018), mat(0x9B3F66, {rough: .2}), 0, -.58, 0));
+    var BANDS = [{y: 120, h: 180}, {y: 330, h: 270}, {y: 630, h: 270}, {y: 930, h: 150}];
+    var card = swatchCard(function(ctx, w, h, T){
+      paper(ctx, w, h);
+      var p = card ? card.p || 0 : 0;
+      ctx.font = '600 44px Nunito'; var dl = lines(ctx, d.desc, w - 300), half = Math.ceil(dl.length / 2);
+      var content = [
+        function(b){ ctx.font = 'italic 700 110px Fraunces'; ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'left'; ctx.fillText(d.title, 150, b.y + 130); },
+        function(b){ ctx.font = '600 44px Nunito'; ctx.fillStyle = '#FFF4F7'; dl.slice(0, half).forEach(function(l, i){ ctx.textAlign = 'left'; ctx.fillText(l, 150, b.y + 80 + i * 60); }); },
+        function(b){ ctx.font = '600 44px Nunito'; ctx.fillStyle = '#FFF4F7'; dl.slice(half).forEach(function(l, i){ ctx.textAlign = 'left'; ctx.fillText(l, 150, b.y + 80 + i * 60); }); ctx.font = '800 34px Nunito'; ctx.fillStyle = 'rgba(255,244,247,.8)'; ctx.fillText(d.chips.join('  ·  ').toUpperCase(), 150, b.y + b.h - 40); },
+        null
+      ];
+      var tip = null;
+      BANDS.forEach(function(b, i){
+        var bp2 = seg(p, i / 4, (i + 1) / 4); if (!bp2) return;
+        var x0 = 100, x1 = 100 + (w - 200) * bp2;
+        ctx.save(); roundRect(ctx, x0, b.y, Math.max(b.h, x1 - x0), b.h, b.h / 2); ctx.clip();
+        var gr = ctx.createLinearGradient(0, b.y, 0, b.y + b.h); gr.addColorStop(0, '#B4527D'); gr.addColorStop(.5, polish); gr.addColorStop(1, '#7E2F52');
+        ctx.fillStyle = gr; ctx.fillRect(x0, b.y, w, b.h);
+        ctx.fillStyle = 'rgba(255,255,255,.28)'; roundRect(ctx, x0 + 30, b.y + 16, Math.max(0, x1 - x0 - 60), 18, 9); ctx.fill();   // gloss
+        if (content[i]) content[i](b);
+        ctx.restore();
+        if (i === 3 && bp2 >= .999) linkSpots(ctx, T, d, b.y + 98, function(c2, x, y, w2, k){ c2.fillStyle = k ? 'rgba(255,255,255,.92)' : '#F4AFC0'; roundRect(c2, x, y - 44, w2, 64, 32); c2.fill(); });
+        if (bp2 < 1) tip = {x: x1, y: b.y + b.h / 2};
+      });
+      if (card) card.tip = tip || {x: w - 120, y: BANDS[3].y + 70};
+    });
+    g.add(card.group);
+    var tipL = new THREE.Vector3(0, -.66, 0), rot = new THREE.Euler(-.35, 0, -.6), last = -1;
+    return {group: g, dur: 6.5, open: function(o){
+      var show = smoothstep(seg(o, 0, .1)); card.group.visible = show > 0; card.group.scale.setScalar(.3 + .7 * show);
+      var pr = seg(o, .22, .97);
+      if (Math.abs(pr - last) > .002 || pr === 0 || pr === 1) { card.p = pr; card.T.redraw(); last = pr; }
+      var up = smoothstep(seg(o, .06, .2));
+      if (up <= 0) { capG.position.set(0, .62, 0); capG.rotation.set(0, 0, 0); return; }
+      var target = onCard(card.tip.x, card.tip.y); target.y += pr > 0 && pr < 1 ? .03 : .3;
+      var held = new THREE.Vector3(); placeTool(capG, new THREE.Euler(rot.x * up, 0, rot.z * up), tipL, target); held.copy(capG.position);
+      capG.position.lerpVectors(new THREE.Vector3(0, .62 + up * 1.0, 0), held, smoothstep(seg(o, .14, .22)));
+    }, focus: {cam: [0, 5.3, 1.6 + CARD_Z], look: [0, .2, CARD_Z + .22]}};
+  }
+
+  // the powder compact: the puff pats the card, and every pat leaves a print with part of the project in it
+  function powderCompact(key){
+    var d = DATA[key], g = new THREE.Group();
+    g.add(mesh(new THREE.CylinderGeometry(.62, .62, .16, 64), M.rose, 0, .08, 0));
+    g.add(mesh(new THREE.CylinderGeometry(.53, .53, .03, 64), mat(0xEBC8B0, {rough: 1, env: .2}), 0, .17, 0));
+    var lidH = new THREE.Group(); lidH.position.set(0, .16, -.62); g.add(lidH);
+    var lidM = new THREE.Group(); lidM.position.z = .62; lidH.add(lidM);
+    lidM.add(mesh(new THREE.CylinderGeometry(.62, .62, .08, 64), M.rose, 0, .04, 0));
+    var mir = mesh(new THREE.CircleGeometry(.54, 48), mat(0xEEF1F6, {rough: .05, metal: .9, env: 1.4}), 0, -.002, 0); mir.rotation.x = Math.PI / 2; lidM.add(mir);
+    var puff = new THREE.Group(); puff.position.y = .19; g.add(puff);
+    puff.add(mesh(new THREE.CylinderGeometry(.46, .46, .1, 48), mat(0xF6CDD5, {rough: 1, env: .2}), 0, .05, 0));
+    var edge = mesh(new THREE.TorusGeometry(.46, .05, 12, 48), mat(0xF6CDD5, {rough: 1, env: .2}), 0, .05, 0); edge.rotation.x = Math.PI / 2; puff.add(edge);
+    puff.add(mesh(new THREE.TorusGeometry(.14, .03, 8, 24), M.satin, 0, .16, 0));
+    puff.scale.setScalar(.72);
+    var PRINTS = [{x: 800, y: 230, rx: 600, ry: 150}, {x: 800, y: 570, rx: 720, ry: 210}, {x: 440, y: 905, rx: 360, ry: 135}, {x: 1160, y: 905, rx: 380, ry: 135}];
+    var card = swatchCard(function(ctx, w, h, T){
+      paper(ctx, w, h);
+      var p = card ? card.p || 0 : 0, tip = null;
+      PRINTS.forEach(function(pr, i){
+        var a = seg(p, i / 4, (i + 1) / 4), pat = seg(a, .45, .6);
+        if (a > 0 && a < 1) { var hop = Math.max(0, 1 - Math.abs(a - .52) / .5); tip = {x: pr.x, y: pr.y, h: 1 - hop}; }
+        if (!pat) return;
+        var gr = ctx.createRadialGradient(pr.x, pr.y, 10, pr.x, pr.y, pr.rx);
+        gr.addColorStop(0, 'rgba(232,196,170,.85)'); gr.addColorStop(.7, 'rgba(240,206,190,.6)'); gr.addColorStop(1, 'rgba(240,206,190,0)');
+        ctx.save(); ctx.translate(pr.x, pr.y); ctx.scale(1, pr.ry / pr.rx); ctx.translate(-pr.x, -pr.y);
+        ctx.globalAlpha = pat; ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(pr.x, pr.y, pr.rx * (.85 + .15 * pat), 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        ctx.globalAlpha = pat; ctx.fillStyle = '#3B2A2C'; ctx.textAlign = 'center';
+        if (i === 0) { ctx.font = 'italic 700 112px Fraunces'; ctx.fillText(d.title, pr.x, pr.y + 38); }
+        if (i === 1) { ctx.font = '600 42px Nunito'; para(ctx, d.desc, pr.x, pr.y - 100, pr.rx * 1.5, 56, 'center'); }
+        if (i === 2) { ctx.font = '800 34px Nunito'; ctx.fillStyle = '#8E2337'; ctx.fillText('MADE WITH', pr.x, pr.y - 30); ctx.fillStyle = '#3B2A2C'; ctx.font = '700 40px Nunito'; para(ctx, d.chips.join(' · '), pr.x, pr.y + 26, pr.rx * 1.6, 50, 'center'); }
+        ctx.globalAlpha = 1;
+        if (i === 3 && pat >= .999) {
+          var y = pr.y - 30; d.links.forEach(function(l, k){
+            ctx.font = '800 40px Nunito'; var label = l.text + (k ? '' : ' →'), bw = ctx.measureText(label).width + 52, x = pr.x - bw / 2;
+            ctx.fillStyle = k ? '#FFFFFF' : '#F4AFC0'; roundRect(ctx, x, y + k * 78 - 44, bw, 64, 32); ctx.fill(); ctx.strokeStyle = '#3B2A2C'; ctx.lineWidth = 3; ctx.stroke();
+            ctx.fillStyle = '#3B2A2C'; ctx.fillText(label, pr.x, y + k * 78);
+            T.hot.push({x: x, y: y + k * 78 - 44, w: bw, h: 64, action: {href: l.href, ext: l.ext}});
+          });
+        }
+      });
+      if (card) card.tip = tip || {x: 1160, y: 905, h: 1};
+    });
+    g.add(card.group);
+    var last = -1;
+    return {group: g, dur: 6.5, open: function(o){
+      var show = smoothstep(seg(o, 0, .1)); card.group.visible = show > 0; card.group.scale.setScalar(.3 + .7 * show);
+      lidH.rotation.x = -smoothstep(seg(o, .05, .14)) * 1.9;
+      var pr = seg(o, .22, .97);
+      if (Math.abs(pr - last) > .002 || pr === 0 || pr === 1) { card.p = pr; card.T.redraw(); last = pr; }
+      var up = smoothstep(seg(o, .12, .22));
+      if (up <= 0) { puff.position.set(0, .19, 0); puff.rotation.set(0, 0, 0); return; }
+      var target = onCard(card.tip.x, card.tip.y); target.y += .02 + card.tip.h * .55;
+      puff.position.lerpVectors(new THREE.Vector3(0, .19 + up * .8, 0), target, smoothstep(seg(o, .16, .22)));
+      puff.rotation.z = Math.sin(o * 40) * .06;
+    }, focus: {cam: [0, 5.3, 1.6 + CARD_Z], look: [0, .2, CARD_Z + .22]}};
+  }
+
   // ---------- put everything on the vanity ----------
   var ORDER = ['about', 'lifetracker', 'internscout', 'search', 'cycle', 'robots', 'skills', 'contact'];
   var PROJ = ['lifetracker', 'internscout', 'search', 'cycle', 'robots'];
-  var NAMES = {about: ['about me', 'the pouch'], lifetracker: ['LifeTracker', 'project 01'], internscout: ['InternScout', 'project 02'], search: ['Search Explorer', 'project 03'],
-               cycle: ['Cycle', 'project 04'], robots: ['Robot Router', 'project 05'], skills: ['skills', 'the palette'], contact: ['say hi', 'the perfume']};
+  var NAMES = {about: ['about me', 'the pouch'], lifetracker: ['LifeTracker', 'the lipstick'], internscout: ['InternScout', 'the contour palette'], search: ['Search Explorer', 'the nail polish'],
+               cycle: ['Cycle', 'the liquid blush'], robots: ['Robot Router', 'the powder compact'], skills: ['skills', 'the eyeshadow palette'], contact: ['say hi', 'the perfume']};
   var BAG_TOP = new THREE.Vector3(0, 2.3, -2.6);
   var items = ORDER.map(function(key, i){
-    var it = key === 'about' ? aboutPouch() : key === 'skills' ? skillPalette() : key === 'contact' ? perfume() : contourPalette(key, PROJ.indexOf(key) + 1);
+    var it = ({about: aboutPouch, skills: skillPalette, contact: perfume, lifetracker: lipstick, cycle: liquidBlush, search: nailPolish, robots: powderCompact,
+               internscout: function(k){ return contourPalette(k, 2); }})[key](key);
     it.key = key; it.o = 0; it.lift = 0;
     var a = -1.2 + 2.4 * i / (ORDER.length - 1);
     it.home = new THREE.Vector3(Math.sin(a) * 6.5, 0, -2.6 + Math.cos(a) * 6.5);
@@ -650,7 +934,8 @@
       it.group.scale.setScalar(.4 + .6 * e);
       var targetRot = focused ? 0 : it.homeRot;
       it.group.rotation.y = s < 1 ? it.homeRot + (1 - e) * 6.28 : it.group.rotation.y + (targetRot - it.group.rotation.y) * Math.min(1, dt * 6);
-      it.o += ((focused ? 1 : 0) - it.o) * Math.min(1, dt * (focused ? 1.8 : 3));
+      if (it.dur) it.o = Math.max(0, Math.min(1, it.o + (focused ? dt / it.dur : -dt * 2.5)));
+      else it.o += ((focused ? 1 : 0) - it.o) * Math.min(1, dt * (focused ? 1.8 : 3));
       it.open(it.o, dt);
     });
   }
@@ -709,7 +994,7 @@
   glass.position.z = .14; glass.userData.item = 'mirror'; mirrorInner.add(glass);
 
   // fonts load after first paint; redraw the text once they're in
-  if (document.fonts) Promise.all(['700 80px Fraunces', 'italic 700 80px Fraunces', 'italic 600 40px Fraunces', '800 40px Nunito', '600 40px Nunito', '400 40px Nunito', '500 40px Nunito'].map(function(f){ return document.fonts.load(f); })).then(redrawAll, redrawAll);
+  if (document.fonts) Promise.all(['700 80px Fraunces', 'italic 700 80px Fraunces', 'italic 600 40px Fraunces', '800 40px Nunito', '600 40px Nunito', '400 40px Nunito', '500 40px Nunito', '700 60px Caveat', '600 60px Caveat'].map(function(f){ return document.fonts.load(f); })).then(redrawAll, redrawAll);
 
   classes(); setActions();
   // arriving from a project page (index.html#projects etc.) skips straight in
