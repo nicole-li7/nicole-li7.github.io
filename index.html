@@ -16,11 +16,11 @@
 :root{
   --bg:#FFF7EA; --bg2:#FBEBD3; --ink:#3A2A20; --ink-soft:#7A6253; --paper:#FFFFFF; --line:#3A2A20;
   --yarn:#7CC35A; --yarn-d:#4E9A35; --yarn-l:#CDEBB8; --cream:#FFE8C7;
-  --shadow:5px 5px 0 var(--line); --dot:rgba(58,42,32,.10);
+  --shadow:5px 5px 0 var(--line); --dot:rgba(58,42,32,.10); --floor:#E9C99C;
 }
 :root[data-theme="dark"]{
   --bg:#191823; --bg2:#232232; --ink:#F6EBDD; --ink-soft:#C4B5A6; --paper:#262536; --line:#F6EBDD;
-  --yarn:#9BE87C; --yarn-d:#6FBF57; --yarn-l:#2F4A2A; --shadow:5px 5px 0 #0B0A10; --dot:rgba(246,235,221,.09);
+  --yarn:#9BE87C; --yarn-d:#6FBF57; --yarn-l:#2F4A2A; --shadow:5px 5px 0 #0B0A10; --dot:rgba(246,235,221,.09); --floor:#3A3752;
 }
 *{box-sizing:border-box}
 body{margin:0; background:var(--bg); color:var(--ink); font-family:"Nunito",system-ui,sans-serif; font-size:16.5px; line-height:1.6; overflow-x:hidden;
@@ -101,6 +101,18 @@ button{font:inherit}
 .cat .zz text:nth-of-type(2){animation-delay:1s} .cat .zz text:nth-of-type(3){animation-delay:2s}
 @keyframes zz{0%{opacity:0; transform:translate(0,0)}30%{opacity:1}100%{opacity:0; transform:translate(14px,-30px)}}
 .cat.sleep .tail{animation-duration:5s}
+
+/* 3D cat (cat3d.js adds .has3d once WebGL is running) */
+.cat3d{display:none}
+.has3d .scene .cat,.has3d .scene .ballwrap,.has3d .scene .floor,.has3d .nap .cat{display:none}
+.has3d .scene .cat3d{display:block; position:absolute; inset:0; width:100%; height:100%; cursor:pointer; touch-action:pan-y}
+.has3d .scene .cat3d:focus-visible{outline:3px dashed var(--yarn-d); outline-offset:4px; border-radius:24px}
+.has3d .nap{aspect-ratio:1}
+.has3d .nap .cat3d{display:block; width:100%; height:100%}
+.zz3{display:none}
+.has3d .zz3{display:block; position:absolute; left:58%; top:10%}
+.zz3 span{position:absolute; font:800 22px "Baloo 2",sans-serif; color:var(--ink-soft); opacity:0; animation:zz 3s ease-in-out infinite}
+.zz3 span:nth-child(2){left:14px; top:-18px; animation-delay:1s} .zz3 span:nth-child(3){left:28px; top:-36px; animation-delay:2s}
 
 /* ---------- trail ---------- */
 .trail{position:relative}
@@ -279,6 +291,7 @@ footer{text-align:center; font-size:14px; color:var(--ink-soft); padding:6px 0 3
       <div class="floor"></div>
       <div class="say" aria-hidden="true"><span class="a">wanna see my stuff?</span><span class="b">follow the yarn!</span></div>
       <svg class="cat" id="cat" viewBox="0 0 300 300" role="button" tabindex="0" aria-label="A ginger cat next to a ball of yarn. Click and she'll bat it toward my projects."></svg>
+      <canvas class="cat3d" id="cat3d" role="button" tabindex="0" aria-label="A low-poly 3D ginger cat next to a ball of yarn. Click and she'll bat it toward my projects."></canvas>
       <div class="ballwrap" id="ballwrap" aria-hidden="true"><svg viewBox="-40 -40 80 80"><use href="#yarnball"/></svg></div>
     </div>
   </section>
@@ -401,6 +414,8 @@ footer{text-align:center; font-size:14px; color:var(--ink-soft); padding:6px 0 3
       </div>
       <div class="nap">
         <svg class="cat sleep" id="napcat" viewBox="0 0 300 300" aria-hidden="true"></svg>
+        <canvas class="cat3d" id="nap3d" aria-hidden="true"></canvas>
+        <div class="zz3" aria-hidden="true"><span>z</span><span>z</span><span>z</span></div>
         <svg class="smiski" viewBox="0 0 254 163" role="img" aria-label="a Smiski, hiding"><use href="#p-sunbath"/></svg>
       </div>
     </div>
@@ -634,6 +649,9 @@ footer{text-align:center; font-size:14px; color:var(--ink-soft); padding:6px 0 3
   catEl.addEventListener('click', function(){ bat('projects'); });
   catEl.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bat('projects'); } });
   document.getElementById('ballwrap').addEventListener('click', function(){ bat('projects'); });
+  var cat3d = document.getElementById('cat3d');
+  cat3d.addEventListener('click', function(){ bat('projects'); });
+  cat3d.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bat('projects'); } });
   document.querySelectorAll('[data-go]').forEach(function(a){
     a.addEventListener('click', function(e){
       e.preventDefault();
@@ -658,6 +676,8 @@ footer{text-align:center; font-size:14px; color:var(--ink-soft); padding:6px 0 3
   }
 })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="cat3d.js"></script>
 <script src="site.js"></script>
 </body>
 </html>
