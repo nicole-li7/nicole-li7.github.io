@@ -111,6 +111,8 @@ section{padding-block:44px}
 .sticker:nth-child(2){transform:rotate(1.5deg); margin-top:18px}
 .sticker:nth-child(3){transform:rotate(-1deg)}
 .sticker:nth-child(4){transform:rotate(1.2deg); margin-top:10px}
+.sticker:nth-child(5){transform:rotate(-1.4deg)}
+.sticker:last-child:nth-child(odd){grid-column:1 / -1; justify-self:center; width:calc(50% - 15px)}
 .sticker:hover,.sticker:focus-within{transform:rotate(0) translateY(-8px) scale(1.03); box-shadow:10px 10px 0 var(--ink)}
 .sticker::before{content:""; position:absolute; top:-14px; left:50%; width:90px; height:26px; background:var(--tape); transform:translateX(-50%) rotate(-3deg); border-radius:3px; z-index:2}
 .sticker .art{height:120px; border-radius:14px; border:3px solid var(--line); display:grid; place-items:center; overflow:hidden; position:relative}
@@ -176,6 +178,15 @@ section{padding-block:44px}
 .cal i.on{background:#8FD46A; animation:pulse 2s ease-in-out infinite}
 .cal i.on:nth-child(12){animation-delay:.15s} .cal i.on:nth-child(13){animation-delay:.3s} .cal i.on:nth-child(14){animation-delay:.45s}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+.art.a5{background:var(--g2)}
+.lanes{position:relative; width:78%; height:76px}
+.lanes i{position:absolute; left:0; right:22px; height:6px; border-radius:3px; background:#fff; border:2px solid #1F3A2A}
+.lanes i:nth-child(1){top:6px} .lanes i:nth-child(2){top:33px} .lanes i:nth-child(3){top:60px}
+.lanes .dock{position:absolute; right:0; width:18px; height:18px; border:2.5px solid #1F3A2A; border-radius:5px}
+.lanes .d1{top:15px; background:#FFE97A} .lanes .d2{top:42px; background:#F6A6C1}
+.lanes .bot{position:absolute; left:0; width:16px; height:16px; border-radius:50%; border:2.5px solid #1F3A2A; background:#8AD25F; animation:haul 4.4s ease-in-out infinite}
+.lanes .r1{top:1px} .lanes .r2{top:28px; background:#fff; animation-direction:reverse; animation-delay:-1.4s} .lanes .r3{top:55px; animation-delay:-2.6s}
+@keyframes haul{0%,10%{transform:translateX(0)}50%,60%{transform:translateX(calc(78px + 6vw))}100%{transform:translateX(0)}}
 .lock{position:absolute; right:10px; bottom:8px; font-family:"Fredoka",sans-serif; font-size:11px; font-weight:600; background:#fff; color:#1F3A2A; border:2px solid #1F3A2A; border-radius:999px; padding:1px 8px}
 
 /* skills marquee */
@@ -244,6 +255,7 @@ footer{text-align:center; font-size:14px; color:var(--ink-soft); padding-block:2
   .sticker .edge,.sticker .hang{display:none}
   .grid{grid-template-columns:1fr}
   .sticker:nth-child(4){margin-top:0}
+  .sticker:last-child:nth-child(odd){width:auto; justify-self:stretch}
   .about{grid-template-columns:1fr}
   .about .aside{padding-top:70px}
   .fan{height:auto; display:flex; flex-direction:column; align-items:center; gap:24px}

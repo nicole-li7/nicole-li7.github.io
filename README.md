@@ -6,7 +6,7 @@ Nicole's portfolio, built as a Smiski sticker book: light green, chunky outlines
 
 **Home page**
 - **Hero** - eyebrow, a waving "hi, i'm Nicole" heading, a typed-out tagline, and a researching figure you can click (or press Enter) to get a lightbulb idea.
-- **Projects** - four sticker cards (LifeTracker, InternScout, Search Algorithm Explorer, Cycle), each with a tiny animated mini-illustration, tags, and links to its page and GitHub.
+- **Projects** - five sticker cards (LifeTracker, InternScout, Search Algorithm Explorer, Cycle, Robot Router), each with a tiny animated mini-illustration, tags, and links to its page and GitHub.
 - **Skills** - a looping marquee of skill chips with a skater figure sliding across.
 - **About** - short bio, highlights, and two tilted polaroid photos.
 - **Contact** - email, GitHub, LinkedIn, and resume buttons over a crowd of figures.
@@ -17,6 +17,7 @@ Nicole's portfolio, built as a Smiski sticker book: light green, chunky outlines
 - **InternScout** - change term, interests, locations, remote and visa toggles, and a min score; the sample postings re-rank, and clicking one shows its score breakdown.
 - **Search Algorithm Explorer** - A* on the 8-puzzle (four heuristics, shuffle, solve, compare all four) and Minimax with alpha-beta on tic-tac-toe.
 - **Cycle** - log days on a calendar and watch the period prediction adapt; nothing is saved or sent.
+- **Robot Router** - three warehouse robots on a one-lane floor; switch between a greedy brain and the hackathon planner, scrub through time, and compare their scores on the same pods.
 - **Write-ups** - every page has "how it works" and "the tricky parts" notes, plus previous/next links between projects.
 
 **Interactions**
@@ -53,6 +54,7 @@ projects/
   internscout.html
   search.html
   cycle.html
+  robots.html
 figures/            green figure PNGs
 arena.jpg           about-section photos
 matcha.jpg

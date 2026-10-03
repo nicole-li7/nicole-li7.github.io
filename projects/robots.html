@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Robot Router by Nicole Li and team CookieLovers: a planner that routes warehouse robots through narrow aisles, built for the Amazon Robotics Hackathon 2026. Try it in your browser.">
+<link rel="icon" href="../figures/idea.png">
+<title>Robot Router · Nicole Li</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
+<link rel="stylesheet" href="../style.css">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<style>
+.floor{display:block; width:100%; height:auto; background:var(--g1); border:3px solid var(--line); border-radius:18px}
+.floor .aisle{stroke:var(--g3); stroke-width:16; stroke-linecap:round}
+.floor .spot{fill:var(--paper); stroke:var(--line); stroke-width:2.5}
+.floor .store{fill:var(--g3); stroke:var(--line); stroke-width:3}
+.floor .dock{stroke:var(--line); stroke-width:3}
+.floor .lab{font:600 12px "Fredoka",sans-serif; fill:#12281A; text-anchor:middle}
+.floor .pod{stroke:#1F3A2A; stroke-width:2}
+.floor .bot circle{fill:#fff; stroke:#1F3A2A; stroke-width:3}
+.floor .bot.full circle{fill:#8AD25F}
+.floor .bot text{font:700 15px "Fredoka",sans-serif; fill:#12281A; text-anchor:middle; dominant-baseline:central}
+.floor .clock{font:600 14px "Fredoka",sans-serif; fill:var(--ink-soft)}
+.legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:10px; font-size:14px; color:var(--ink-soft)}
+.legend i{display:inline-block; width:12px; height:12px; border:2px solid #1F3A2A; border-radius:3px; margin-right:6px; vertical-align:-1px}
+.legend .rb{border-radius:50%; background:#fff} .legend .rf{border-radius:50%; background:#8AD25F}
+.scrub{width:100%; margin-top:14px}
+.bars2{display:grid; gap:8px; margin-top:16px}
+.bar2{display:grid; grid-template-columns:150px 1fr; gap:10px; align-items:center; font:600 13.5px "Fredoka",sans-serif}
+.bar2 .track2{height:24px; background:var(--g1); border:2px solid var(--line); border-radius:8px; overflow:hidden; position:relative}
+.bar2 .fill{height:100%; background:var(--g4); transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.bar2 .num{position:absolute; left:8px; top:1px; font-size:12.5px; color:#12281A; white-space:nowrap}
+@media (max-width:760px){ .bar2{grid-template-columns:96px 1fr} }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="p-walk" viewBox="0 0 220 262"><image href="../figures/walk.png" width="220" height="262"/></symbol>
+  <symbol id="p-present" viewBox="0 0 165 276"><image href="../figures/present.png" width="165" height="276"/></symbol>
+  <symbol id="p-idea" viewBox="0 0 127 259"><image href="../figures/idea.png" width="127" height="259"/></symbol>
+</svg>
+<div class="floaters" aria-hidden="true">
+  <span class="s1" style="left:5%;top:16%;background:var(--g3);animation-delay:-2s"></span>
+  <span class="s3" style="left:86%;top:10%;background:var(--g2);animation-delay:-1s;width:80px;height:80px"></span>
+  <span class="s2" style="left:90%;top:62%;background:var(--g4);animation-delay:-8s;width:50px;height:50px"></span>
+</div>
+<canvas id="sparkles" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Site">
+  <ul>
+    <li><a href="../index.html">home</a></li>
+    <li><a href="../index.html#projects">projects</a></li>
+    <li><a href="../index.html#contact">say hi</a></li>
+    <li><button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button></li>
+  </ul>
+</nav>
+
+<main class="wrap">
+  <header class="phero">
+    <div>
+      <a class="back" href="../index.html#projects"><span class="ar">←</span> back to the sticker book</a><br>
+      <span class="eyebrow">Python · hackathon</span>
+      <h1>Robot Router</h1>
+      <p class="plead">Our team's entry for the Amazon Robotics Hackathon 2026, built with Jaden and Liam as team CookieLovers. Warehouse robots carry shelves of inventory to pick stations through narrow aisles, and our code decides every robot's next move so they don't jam each other up.</p>
+      <div class="tags"><span>Python</span><span>space-time A*</span><span>multi-robot planning</span><span>simulation</span><span>local search</span></div>
+      <div class="btns">
+        <a class="btn" href="#demo">try it ✨</a>
+        <a class="btn alt" href="https://github.com/nicole-li7/ArHackathon2026" target="_blank" rel="noopener">github</a>
+      </div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="pad a"></div>
+      <div class="smk hero-smk"><svg viewBox="0 0 220 262"><use href="#p-walk"/></svg></div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div><h2>try it</h2></div>
+
+    <div class="demo-card">
+      <h3 class="demo-sub">Three robots, fourteen pods, one-lane aisles</h3>
+      <p>Pods show up at the storage areas on the left over time, and each one needs to get to the dock that matches its colour. Only one robot fits on an aisle spot or a dock at a time. Pick a brain and press play.</p>
+      <svg class="floor" id="floor" viewBox="0 0 700 450" role="img" aria-label="Warehouse floor with three robots moving pods from storage to docks"></svg>
+      <div class="legend" aria-hidden="true">
+        <span><i class="rb"></i>robot, empty</span><span><i class="rf"></i>robot, carrying</span>
+        <span><i style="background:#FFE97A"></i>pod for dock A</span><span><i style="background:#F6A6C1"></i>pod for dock B</span>
+      </div>
+      <input class="scrub" id="scrub" type="range" min="0" max="0" value="0" step="0.01" aria-label="Time step">
+      <div class="ctrl" style="margin-top:10px"><span class="lbl">brain</span>
+        <button class="tog" type="button" data-brain="greedy">greedy (each robot for itself)</button>
+        <button class="tog" type="button" data-brain="planner" aria-pressed="true">our planner</button>
+      </div>
+      <div class="ctrl">
+        <button class="btn small" type="button" id="play">play</button>
+        <button class="btn small alt" type="button" id="restart">restart</button>
+        <button class="btn small alt" type="button" id="newpods">new pods</button>
+      </div>
+      <div class="stat" id="stat" aria-live="polite"></div>
+      <div class="bars2" id="bars"></div>
+    </div>
+    <p class="demo-note">The demo is a small JavaScript version of the same idea so it can run here: the hackathon's movement and scoring rules, a simpler search, and every move takes one step. The real router is Python and is in the repo.</p>
+  </section>
+
+  <section>
+    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div><h2>how it works</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>The challenge</h3>
+        <p>The floor is a graph of storage spots, stations and aisles. Every time step the game asks our function where each idle robot should go next. Pickups and drop-offs happen on their own. Each pod scores <code>100 × e<sup>−time/50</sup></code>, so slow deliveries lose points and a pod that never arrives scores nothing.</p>
+      </div>
+      <div class="note">
+        <h3>A planner, not a reflex</h3>
+        <p>The game is fully predictable and hands us the whole floor, so instead of reacting ("go to the closest pod") we plan. Each step we work out a full plan for every robot, test it, improve it, and play only its first move. Next step we do it again with whatever changed.</p>
+      </div>
+      <div class="note">
+        <h3>Booking the floor ahead of time</h3>
+        <p>A reservation table records who will be where and when: "robot 2 is in this aisle during steps 10 to 13." It follows the game's capacity rules exactly, including that the lower-numbered robot wins a tie. That lets us see a traffic jam before it happens.</p>
+      </div>
+      <div class="note">
+        <h3>A* through time</h3>
+        <p>Normal A* finds which places to visit. Ours searches over <em>(place, time)</em> pairs, so its answer can be "wait here two steps, then take the narrow aisle once the other robot is through." Robots are routed one at a time in a priority order, each one around the bookings of the ones before it.</p>
+      </div>
+      <div class="note">
+        <h3>Check the plan by playing it</h3>
+        <p>We wrote an exact copy of the game's step loop. Every candidate plan gets played out on it and scored with the real formula. Since the game is deterministic, that score isn't a guess, so plans are compared by what they'd actually earn.</p>
+      </div>
+      <div class="note">
+        <h3>Making the plan better</h3>
+        <p>New pods are slotted into the best spot in some robot's to-do list. Then a local search keeps trying changes (hand a pod to another robot, swap two pods, reorder stops, change who goes first) and keeps whatever scores higher. The best plan carries over to the next step, so work isn't thrown away.</p>
+      </div>
+      <div class="note wide">
+        <h3>Staying under the clock</h3>
+        <p>Each call has to answer within 1 second and each test case within 2 minutes. The planner works on a budget: 0.25 s for the first plan, less when nothing new happened, and 45 s total per case. If anything ever goes wrong, a simple shortest-path move takes over, so it never sends the robot something invalid.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="title"><h2>the tricky parts</h2></div>
+    <div class="explain">
+      <div class="note">
+        <h3>Testing like a grader</h3>
+        <p>The final score came from hidden test cases, so we built our own: a generator that made 130+ random floors, ten nasty hand-made ones (pods nobody can reach, robots starting on a dock, one-way loops), and a benchmark that compares every run to the best score possible. On the provided cases we scored 84.2 against 58.7 for the example driver and delivered every pod.</p>
+      </div>
+      <div class="note">
+        <h3>Knowing when to stop</h3>
+        <p>We tested whether more effort would help: three times the thinking time, a search that tries every possible plan, even letting it see future pods. None gained more than half a point. The remaining gap was robots getting in each other's way and travel time, not a weak search, so we stopped tuning.</p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="pnext" aria-label="More projects">
+    <a class="btn alt" href="cycle.html"><small>← previous</small>Cycle</a>
+    <a class="btn alt" href="lifetracker.html"><small>next →</small>LifeTracker</a>
+  </nav>
+</main>
+<footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
+
+<script src="../site.js"></script>
+<script>
+(function(){
+  // ---------- the floor ----------
+  // 3 storage areas on the left, 2 single-dock stations on the right, and a
+  // grid of one-robot-wide aisles in between. Every move takes one step.
+  var NODES = [], EDGES = [], ADJ = [], DIST = [];
+  function addNode(x, y, type, cap){ NODES.push({x: x, y: y, type: type, cap: cap}); ADJ.push([]); return NODES.length - 1; }
+  var at = {};
+  [0, 2, 4].forEach(function(y){ at['0,' + y] = addNode(0, y, 'storage', 2); });
+  [1, 3].forEach(function(y){ at['6,' + y] = addNode(6, y, 'station', 1); });
+  for (var y = 0; y <= 4; y++) for (var x = 1; x <= 5; x++) {
+    if (y % 2 === 0 || x === 1 || x === 3 || x === 5) at[x + ',' + y] = addNode(x, y, 'travel', 1);
+  }
+  function link(a, b){ if (a === undefined || b === undefined) return; EDGES.push([a, b]); ADJ[a].push(b); ADJ[b].push(a); }
+  Object.keys(at).forEach(function(k){
+    var p = k.split(','), x = +p[0], y = +p[1];
+    link(at[k], at[(x + 1) + ',' + y]);
+    if (x >= 1 && x <= 5) link(at[k], at[x + ',' + (y + 1)]);
+  });
+  var STORAGE = NODES.map(function(n, i){ return i; }).filter(function(i){ return NODES[i].type === 'storage'; });
+  var STATIONS = NODES.map(function(n, i){ return i; }).filter(function(i){ return NODES[i].type === 'station'; });
+  NODES.forEach(function(n, s){
+    var d = NODES.map(function(){ return Infinity; }), q = [s]; d[s] = 0;
+    while (q.length) { var u = q.shift(); ADJ[u].forEach(function(v){ if (d[v] === Infinity) { d[v] = d[u] + 1; q.push(v); } }); }
+    DIST.push(d);
+  });
+
+  // ---------- a test case: when and where pods show up ----------
+  function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function makeCase(seed){
+    var r = rng(seed), pods = [], t = 0;
+    for (var i = 0; i < 14; i++) {
+      if (i >= 3) t += 1 + Math.floor(r() * 7);
+      pods.push({id: i, src: STORAGE[Math.floor(r() * 3)], dest: STATIONS[Math.floor(r() * 2)], entry: t});
+    }
+    return {pods: pods, units: STORAGE.slice(), maxT: 160};
+  }
+
+  // ---------- the engine (same rules as the hackathon's) ----------
+  function newState(tc){
+    return {t: 0, units: tc.units.map(function(n, i){ return {id: i, node: n, carrying: null}; }),
+      pods: tc.pods.map(function(p){ return {id: p.id, src: p.src, dest: p.dest, entry: p.entry, node: null, carrier: null, done: null}; })};
+  }
+  function occupancy(st, n){ var c = 0; st.units.forEach(function(u){ if (u.node === n) c++; }); return c; }
+  function validMove(st, u, n){ return ADJ[u.node].indexOf(n) >= 0 && occupancy(st, n) < NODES[n].cap; }
+  function resolve(st){
+    st.units.forEach(function(u){
+      if (u.carrying !== null) { var p = st.pods[u.carrying]; if (p.dest === u.node) { p.done = st.t; p.carrier = null; u.carrying = null; } }
+      if (u.carrying === null) {
+        var w = st.pods.filter(function(p){ return p.node === u.node && p.carrier === null && p.done === null; })
+          .sort(function(a, b){ return a.entry - b.entry || a.id - b.id; })[0];
+        if (w) { w.node = null; w.carrier = u.id; u.carrying = w.id; }
+      }
+    });
+  }
+  function scoreOf(pods){ var s = 0; pods.forEach(function(p){ if (p.done !== null) s += 100 * Math.exp(-(p.done - p.entry) / 50); }); return s; }
+  // Runs one test case a step at a time, so the page can do it in slices.
+  function runner(tc, driver){
+    var st = newState(tc), frames = [];
+    function snap(){ frames.push({t: st.t, units: st.units.map(function(u){ return {node: u.node, carrying: u.carrying}; }),
+      waiting: st.pods.filter(function(p){ return p.node !== null; }).map(function(p){ return {node: p.node, dest: p.dest}; }),
+      delivered: st.pods.filter(function(p){ return p.done !== null; }).length, score: scoreOf(st.pods) / tc.pods.length}); }
+    driver.reset();
+    snap();
+    return {
+      done: function(){ return st.t >= tc.maxT || st.pods.every(function(p){ return p.done !== null; }); },
+      step: function(){
+        st.pods.forEach(function(p){ if (p.entry === st.t) p.node = p.src; });
+        resolve(st);
+        st.units.forEach(function(u){                       // ask each robot, lowest id first
+          var n = driver.move(u.id, st);
+          if (n !== null && n !== undefined && n !== u.node && validMove(st, u, n)) u.node = n;
+        });
+        resolve(st);
+        st.t++;
+        snap();
+      },
+      result: function(){
+        var done = st.pods.filter(function(p){ return p.done !== null; });
+        return {frames: frames, delivered: done.length, total: tc.pods.length, score: scoreOf(st.pods) / tc.pods.length,
+          avg: done.length ? done.reduce(function(a, p){ return a + p.done - p.entry; }, 0) / done.length : 0};
+      }
+    };
+  }
+  function run(tc, driver){ var r = runner(tc, driver); while (!r.done()) r.step(); return r.result(); }
+
+  // ---------- greedy: nearest pod, shortest path, ignore everyone ----------
+  function greedy(){
+    var stuck = {}, r = rng(7);
+    return {reset: function(){ stuck = {}; r = rng(7); }, move: function(id, st){
+      var u = st.units[id], target = null;
+      if (u.carrying !== null) target = st.pods[u.carrying].dest;
+      else st.pods.forEach(function(p){ if (p.node !== null && (target === null || DIST[u.node][p.node] < DIST[u.node][target])) target = p.node; });
+      if (target === null || target === u.node) return null;
+      var next = ADJ[u.node].filter(function(n){ return DIST[n][target] === DIST[u.node][target] - 1; })[0];
+      if (validMove(st, u, next)) { stuck[id] = 0; return next; }
+      // blocked: wait, and after a few tries shuffle sideways
+      stuck[id] = (stuck[id] || 0) + 1;
+      if (stuck[id] < 3) return null;
+      var free = ADJ[u.node].filter(function(n){ return validMove(st, u, n); });
+      return free.length ? free[Math.floor(r() * free.length)] : null;
+    }};
+  }
+
+  // small binary heap: lowest f first, later time breaks ties
+  function Heap(){ this.a = []; }
+  Heap.prototype.less = function(x, y){ return x[0] < y[0] || (x[0] === y[0] && x[1] > y[1]); };
+  Heap.prototype.push = function(n){ var a = this.a; a.push(n); var i = a.length - 1;
+    while (i > 0) { var p = (i - 1) >> 1; if (!this.less(a[i], a[p])) break; var t = a[i]; a[i] = a[p]; a[p] = t; i = p; } };
+  Heap.prototype.pop = function(){ var a = this.a, top = a[0], last = a.pop();
+    if (a.length) { a[0] = last; var i = 0;
+      for (;;) { var l = 2*i+1, r = l+1, m = i;
+        if (l < a.length && this.less(a[l], a[m])) m = l;
+        if (r < a.length && this.less(a[r], a[m])) m = r;
+        if (m === i) break; var t = a[i]; a[i] = a[m]; a[m] = t; i = m; } }
+    return top; };
+
+  // ---------- planner: assign pods, book space-time routes, simulate, improve ----------
+  function planner(){
+    var plan = null, cacheT = -1, moves = {}, settled = false, EVALS, H = 70;
+
+    // Reservation table: res[n] = list of [from, to, unit] time intervals.
+    function occ(res, n, t, j){ var c = 0; res[n].forEach(function(iv){ if (iv[2] !== j && iv[0] <= t && t <= iv[1]) c++; }); return c; }
+    function freeFrom(res, n, t, j){ return res[n].filter(function(iv){ return iv[2] !== j && iv[1] >= t; }).length < NODES[n].cap; }
+    // Space-time A*: earliest arrival at goal, may wait or detour around bookings.
+    function astar(res, j, start, t0, goal, park){
+      var open = new Heap(), parent = {}, seen = {}, exp = 0;
+      open.push([t0 + (park ? 0 : DIST[start][goal]), t0, start]);
+      parent[start + ':' + t0] = null;
+      while (open.a.length) {
+        var cur = open.pop(), t = cur[1], n = cur[2], key = n + ':' + t;
+        if (seen[key]) continue; seen[key] = 1;
+        if (park ? goal(n, t) : n === goal) {
+          var path = []; for (var k = key; k; k = parent[k]) path.unshift(k.split(':').map(Number));
+          return path;
+        }
+        if (++exp > 2500 || t >= t0 + H) continue;
+        var opts = [n].concat(ADJ[n]);
+        for (var m = 0; m < opts.length; m++) {
+          var nb = opts[m], k2 = nb + ':' + (t + 1);
+          if (k2 in parent) continue;
+          if (occ(res, nb, t + 1, j) >= NODES[nb].cap) continue;
+          if (nb !== n && occ(res, nb, t, j) >= NODES[nb].cap) continue;   // no swaps, no squeezing in
+          parent[k2] = key;
+          open.push([t + 1 + (park ? 0 : DIST[nb][goal]), t + 1, nb]);
+        }
+      }
+      return null;
+    }
+    // Plan -> routes (in priority order) -> exact replay of the engine -> value.
+    function evaluate(st, p){
+      var res = NODES.map(function(){ return []; }), routes = st.units.map(function(){ return []; }), bad = 0, tail = 0;
+      st.units.forEach(function(u, j){ res[u.node].push([-1, st.t, j]); });
+      p.order.forEach(function(j){
+        res.forEach(function(lst, n){ res[n] = lst.filter(function(iv){ return iv[2] !== j; }); });
+        var u = st.units[j], node = u.node, t = st.t, path = [[node, t]];
+        p.stops[j].forEach(function(pid){
+          var pod = st.pods[pid], goals = pod.carrier === j ? [pod.dest] : [pod.node, pod.dest];
+          goals.forEach(function(g){
+            if (g === node) return;
+            var seg = astar(res, j, node, t, g, false);
+            if (!seg) { bad++; return; }
+            path = path.concat(seg.slice(1)); node = g; t = seg[seg.length - 1][1];
+          });
+        });
+        tail += t - st.t;
+        // park on a storage spot (never on a dock) that stays free from then on
+        var spot = astar(res, j, node, t, function(n, tt){
+          return NODES[n].type === 'storage' && freeFrom(res, n, tt, j);
+        }, true);
+        if (spot) { path = path.concat(spot.slice(1)); node = spot[spot.length - 1][0]; t = spot[spot.length - 1][1]; }
+        for (var i = 0; i < path.length; i++) res[path[i][0]].push([path[i][1], i + 1 < path.length ? path[i + 1][1] : 1e9, j]);
+        for (var i2 = 0; i2 + 1 < path.length; i2++) routes[j].push(path[i2 + 1][0]);
+      });
+      // replay: copy the state and run the real rules with these routes
+      var sim = {t: st.t, units: st.units.map(function(u){ return {id: u.id, node: u.node, carrying: u.carrying}; }),
+        pods: st.pods.map(function(q){ return {id: q.id, src: q.src, dest: q.dest, entry: q.entry, node: q.node, carrier: q.carrier, done: q.done}; })};
+      var ptr = st.units.map(function(){ return 0; }), first = {}, miss = 0;
+      for (var s = st.t; s < st.t + H; s++) {
+        if (s > st.t) resolve(sim);
+        sim.units.forEach(function(u, j){
+          if (ptr[j] >= routes[j].length) return;
+          var want = routes[j][ptr[j]];
+          if (want !== u.node) { if (!validMove(sim, u, want)) { miss++; return; } u.node = want; }
+          if (s === st.t) first[j] = want;
+          ptr[j]++;
+        });
+        resolve(sim); sim.t++;
+        if (sim.pods.every(function(q){ return q.done !== null || (q.node === null && q.carrier === null); }) &&
+            ptr.every(function(k, j){ return k >= routes[j].length; })) break;
+      }
+      var known = sim.pods.filter(function(q){ return q.entry <= st.t; });
+      return {value: scoreOf(known) - 0.02 * tail - 0.5 * miss - 20 * bad, first: first};
+    }
+    function feasible(st, p){ return p.stops.every(function(list, j){
+      return list.every(function(pid, k){ return st.pods[pid].carrier === null || (st.pods[pid].carrier === j && k === 0); }); }); }
+
+    function replan(st){
+      var live = st.pods.filter(function(q){ return q.done === null && (q.node !== null || q.carrier !== null); }).map(function(q){ return q.id; });
+      // warm start: keep last step's plan for pods that are still around
+      var p = {order: plan ? plan.order.slice() : st.units.map(function(u){ return u.id; }),
+        stops: st.units.map(function(u, j){ return plan ? plan.stops[j].filter(function(pid){
+          return live.indexOf(pid) >= 0 && (st.pods[pid].carrier === null || st.pods[pid].carrier === j); }) : []; })};
+      st.units.forEach(function(u, j){
+        if (u.carrying !== null) { p.stops.forEach(function(l, k){ p.stops[k] = l.filter(function(x){ return x !== u.carrying; }); }); p.stops[j].unshift(u.carrying); }
+      });
+      var fresh = live.some(function(pid){ return !p.stops.some(function(l){ return l.indexOf(pid) >= 0; }); });
+      // anytime budget: search hard when something changed, re-check cheaply once settled
+      EVALS = fresh || !settled ? 60 : 8;
+      var best = p, bestEv = evaluate(st, p), evals = 1;
+      function consider(c, force){ if ((!force && evals >= EVALS) || !feasible(st, c)) return false; evals++;
+        var ev = evaluate(st, c); if (ev.value > bestEv.value + 1e-9) { best = c; bestEv = ev; return true; } return false; }
+      function copy(c){ return {order: c.order.slice(), stops: c.stops.map(function(l){ return l.slice(); })}; }
+      function placements(base, pid, cb){
+        base.stops.forEach(function(l, j){
+          var rest = l.filter(function(x){ return x !== pid; });
+          for (var k = 0; k <= rest.length; k++) {
+            var c = copy(base); base.stops.forEach(function(_, i){ c.stops[i] = base.stops[i].filter(function(x){ return x !== pid; }); });
+            c.stops[j] = rest.slice(0, k).concat([pid], rest.slice(k)); cb(c);
+          }
+        });
+      }
+      // 1. new pods: try every robot and every position, keep the best
+      live.forEach(function(pid){
+        if (best.stops.some(function(l){ return l.indexOf(pid) >= 0; })) return;
+        var base = best; bestEv = {value: -Infinity};
+        placements(base, pid, function(c){ consider(c, true); });
+      });
+      // 2. improve: move pods around and try other priority orders
+      var perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]], before = bestEv.value;
+      for (var round = 0; round < 2 && evals < EVALS; round++) {
+        perms.forEach(function(o){ var c = copy(best); c.order = o; consider(c); });
+        live.forEach(function(pid){ placements(best, pid, consider); });
+      }
+      settled = !fresh && bestEv.value <= before + 1e-9;
+      plan = best; moves = bestEv.first;
+    }
+    return {reset: function(){ plan = null; cacheT = -1; moves = {}; settled = false; }, move: function(id, st){
+      if (cacheT !== st.t) { replan(st); cacheT = st.t; }
+      var n = moves[id];
+      return n === undefined ? null : n;
+    }};
+  }
+
+  // ---------- drawing ----------
+  var NS = 'http://www.w3.org/2000/svg', svg = document.getElementById('floor');
+  var POD_COL = {}; POD_COL[STATIONS[0]] = '#FFE97A'; POD_COL[STATIONS[1]] = '#F6A6C1';
+  function px(n){ return 60 + NODES[n].x * 96; }
+  function py(n){ return 45 + NODES[n].y * 90; }
+  function el(tag, attrs, parent){ var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); (parent || svg).appendChild(e); return e; }
+  EDGES.forEach(function(e){ el('line', {'class': 'aisle', x1: px(e[0]), y1: py(e[0]), x2: px(e[1]), y2: py(e[1])}); });
+  NODES.forEach(function(n, i){
+    if (n.type === 'travel') el('circle', {'class': 'spot', cx: px(i), cy: py(i), r: 8});
+  });
+  STORAGE.forEach(function(i){
+    el('rect', {'class': 'store', x: px(i) - 34, y: py(i) - 30, width: 68, height: 60, rx: 12});
+    el('text', {'class': 'lab', x: px(i), y: py(i) + 19}).textContent = 'storage';
+  });
+  STATIONS.forEach(function(i, k){
+    el('rect', {'class': 'dock', x: px(i) - 30, y: py(i) - 30, width: 60, height: 60, rx: 12, fill: POD_COL[i]});
+    el('text', {'class': 'lab', x: px(i), y: py(i) + 48}).textContent = 'dock ' + 'AB'[k];
+  });
+  var podLayer = el('g', {}), botLayer = el('g', {});
+  var clock = el('text', {'class': 'clock', x: 690, y: 440, 'text-anchor': 'end'});
+  var bots = [0, 1, 2].map(function(i){
+    var g = el('g', {'class': 'bot'}, botLayer);
+    el('circle', {r: 17}, g);
+    el('text', {}, g).textContent = i + 1;
+    var pod = el('rect', {'class': 'pod', x: 8, y: -24, width: 13, height: 13, rx: 3}, g);
+    return {g: g, pod: pod};
+  });
+
+  // ---------- playback ----------
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var seed = 3, tc = makeCase(seed), brain = 'planner', results = {}, pos = 0, playing = false, last = 0, SPEED = 4;
+  var scrub = document.getElementById('scrub'), playBtn = document.getElementById('play'), stat = document.getElementById('stat'), bars = document.getElementById('bars');
+  var DRIVERS = {greedy: greedy, planner: planner}, NAMES = {greedy: 'greedy', planner: 'our planner'};
+
+  function draw(){
+    var r = results[brain]; if (!r) return;
+    var fr = r.frames, i = Math.min(Math.floor(pos), fr.length - 1), j = Math.min(i + 1, fr.length - 1), f = pos - i;
+    var a = fr[i], b = fr[j];
+    a.units.forEach(function(u, k){
+      var x = px(u.node) + (px(b.units[k].node) - px(u.node)) * f, y = py(u.node) + (py(b.units[k].node) - py(u.node)) * f;
+      var full = (f < .5 ? a : b).units[k].carrying;
+      bots[k].g.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ')');
+      bots[k].g.setAttribute('class', 'bot' + (full !== null ? ' full' : ''));
+      bots[k].pod.style.display = full !== null ? '' : 'none';
+      if (full !== null) bots[k].pod.setAttribute('fill', POD_COL[tc.pods[full].dest]);
+    });
+    podLayer.innerHTML = '';
+    var count = {};
+    (f < .5 ? a : b).waiting.forEach(function(p){
+      var c = count[p.node] = (count[p.node] || 0) + 1, col = (c - 1) % 4, row = Math.floor((c - 1) / 4);
+      el('rect', {'class': 'pod', x: px(p.node) - 27 + col * 14, y: py(p.node) - 24 + row * 14, width: 11, height: 11, rx: 2, fill: POD_COL[p.dest]}, podLayer);
+    });
+    var shown = fr[Math.round(pos)] || fr[fr.length - 1];
+    clock.textContent = 'step ' + shown.t;
+    stat.innerHTML = '<span>step <b>' + shown.t + '</b></span><span>delivered <b>' + shown.delivered + '</b> / ' + tc.pods.length + '</span>' +
+      '<span>score so far <b>' + shown.score.toFixed(1) + '</b></span>' + (pos >= fr.length - 1 ? '<span>average delivery <b>' + r.avg.toFixed(1) + '</b> steps</span>' : '');
+    scrub.value = pos;
+  }
+  function frame(now){
+    if (!playing) return;
+    var r = results[brain];
+    pos = Math.min(r.frames.length - 1, pos + (now - last) / 1000 * SPEED); last = now;
+    draw();
+    if (pos >= r.frames.length - 1) { setPlaying(false); return; }
+    requestAnimationFrame(frame);
+  }
+  function setPlaying(p){
+    var r = results[brain];
+    if (p && (!r || pos >= r.frames.length - 1)) pos = 0;
+    playing = p && !!r; playBtn.textContent = playing ? 'pause' : 'play';
+    if (playing) { last = performance.now(); requestAnimationFrame(frame); }
+  }
+
+  // run a brain on the current pods in small slices so the page never freezes
+  var job = 0;
+  function compute(name, done){
+    var my = job, r = runner(tc, DRIVERS[name]());
+    (function slice(){
+      if (my !== job) return;
+      var end = performance.now() + 12;
+      while (!r.done() && performance.now() < end) r.step();
+      if (!r.done()) { stat.innerHTML = '<span>' + NAMES[name] + ' is thinking… step ' + r.result().frames.length + '</span>'; setTimeout(slice, 0); return; }
+      results[name] = r.result(); done();
+    })();
+  }
+  function showBars(){
+    var names = ['greedy', 'planner'];
+    bars.innerHTML = names.map(function(n){
+      var r = results[n];
+      return '<div class="bar2"><span>' + NAMES[n] + '</span><div class="track2"><div class="fill" style="width:0"></div><span class="num">score ' +
+        r.score.toFixed(1) + ' · ' + r.delivered + '/' + r.total + ' delivered</span></div></div>';
+    }).join('');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      bars.querySelectorAll('.fill').forEach(function(f, k){ f.style.width = Math.max(2, results[names[k]].score) + '%'; });
+    }); });
+  }
+  function load(autoplay){
+    job++; setPlaying(false); results = {}; pos = 0; bars.innerHTML = ''; scrub.max = 0;
+    var first = brain, other = brain === 'planner' ? 'greedy' : 'planner';
+    compute(first, function(){
+      scrub.max = results[first].frames.length - 1; draw();
+      if (autoplay) setPlaying(true);
+      compute(other, showBars);
+    });
+  }
+
+  document.querySelectorAll('[data-brain]').forEach(function(b){
+    b.addEventListener('click', function(){
+      brain = b.dataset.brain;
+      document.querySelectorAll('[data-brain]').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      if (results[brain]) { scrub.max = results[brain].frames.length - 1; pos = 0; draw(); setPlaying(true); }
+    });
+  });
+  playBtn.addEventListener('click', function(){ setPlaying(!playing); });
+  document.getElementById('restart').addEventListener('click', function(){ pos = 0; draw(); setPlaying(true); });
+  document.getElementById('newpods').addEventListener('click', function(){ seed++; tc = makeCase(seed); load(true); });
+  scrub.addEventListener('input', function(){ setPlaying(false); pos = +scrub.value; draw(); });
+
+  load(false);
+  if (!reduce && 'IntersectionObserver' in window) {
+    var seen = false, io = new IntersectionObserver(function(es){
+      if (seen || !es[0].isIntersecting) return; seen = true; io.disconnect();
+      (function wait(){ if (results[brain]) setPlaying(true); else setTimeout(wait, 100); })();
+    }, {threshold: .5});
+    io.observe(svg);
+  }
+})();
+</script>
+</body>
+</html>
