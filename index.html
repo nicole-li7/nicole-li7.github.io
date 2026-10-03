@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,231 +8,656 @@
 <meta property="og:description" content="CS student at UBC who makes small, polished apps for real life.">
 <meta property="og:image" content="matcha.jpg">
 <link rel="icon" href="figures/idea.png">
-<title>Nicole's Sticker Book</title>
+<title>Nicole's Yarn Trail</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
 <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<style>
+:root{
+  --bg:#FFF7EA; --bg2:#FBEBD3; --ink:#3A2A20; --ink-soft:#7A6253; --paper:#FFFFFF; --line:#3A2A20;
+  --yarn:#7CC35A; --yarn-d:#4E9A35; --yarn-l:#CDEBB8; --cream:#FFE8C7;
+  --shadow:5px 5px 0 var(--line); --dot:rgba(58,42,32,.10);
+}
+:root[data-theme="dark"]{
+  --bg:#191823; --bg2:#232232; --ink:#F6EBDD; --ink-soft:#C4B5A6; --paper:#262536; --line:#F6EBDD;
+  --yarn:#9BE87C; --yarn-d:#6FBF57; --yarn-l:#2F4A2A; --shadow:5px 5px 0 #0B0A10; --dot:rgba(246,235,221,.09);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:"Nunito",system-ui,sans-serif; font-size:16.5px; line-height:1.6; overflow-x:hidden;
+  background-image:radial-gradient(circle at 1px 1px, var(--dot) 1.3px, transparent 0); background-size:24px 24px}
+h1,h2,h3{font-family:"Baloo 2","Nunito",system-ui,sans-serif; line-height:1.1; margin:0}
+a{color:inherit}
+img{max-width:100%} [hidden]{display:none!important}
+button{font:inherit}
+
+/* top bar */
+.bar{position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:40; display:flex; align-items:center; gap:2px; padding:5px; background:var(--paper); border:2.5px solid var(--line); border-radius:999px; box-shadow:3px 3px 0 var(--line); white-space:nowrap}
+.bar a,.bar button{display:block; border:0; background:none; color:var(--ink); cursor:pointer; text-decoration:none; font:700 15px "Baloo 2",sans-serif; padding:5px 13px; border-radius:999px}
+.bar a:hover,.bar button:hover,.bar a:focus-visible,.bar button:focus-visible{background:var(--yarn-l); outline:none}
+.bar .me{display:flex; align-items:center; gap:6px}
+.bar .me i{width:14px; height:14px; border-radius:50%; background:var(--yarn); border:2px solid var(--line)}
+
+/* buttons */
+.btn{display:inline-block; font:700 16.5px "Baloo 2",sans-serif; text-decoration:none; padding:9px 20px; border:2.5px solid var(--line); border-radius:14px; background:var(--yarn); color:#1E3313; box-shadow:var(--shadow); cursor:pointer; transition:transform .15s, box-shadow .15s}
+.btn.alt{background:var(--paper); color:var(--ink)}
+.btn:hover{transform:translate(2px,2px); box-shadow:3px 3px 0 var(--line)}
+.btn:active{transform:translate(5px,5px); box-shadow:0 0 0 var(--line)}
+.btn:focus-visible,.tagbtn:focus-visible,.cat:focus-visible{outline:3px dashed var(--yarn-d); outline-offset:4px}
+.btn.small{font-size:14px; padding:5px 13px; border-radius:11px; box-shadow:3px 3px 0 var(--line)}
+
+/* ---------- intro ---------- */
+.intro{min-height:100vh; min-height:100svh; display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:24px; max-width:1100px; margin:0 auto; padding:90px 24px 40px; position:relative}
+.eyebrow{display:inline-block; font:700 13px "Baloo 2",sans-serif; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft)}
+.intro h1 .nw{white-space:nowrap}
+.intro h1{font-size:clamp(44px,6.2vw,78px); font-weight:800; margin-top:6px; letter-spacing:-.01em}
+.yarnword{position:relative; white-space:nowrap}
+.yarnword svg{position:absolute; left:-2%; bottom:0; width:104%; height:.32em; overflow:visible}
+.yarnword path{fill:none; stroke:var(--yarn); stroke-width:7; stroke-linecap:round; stroke-dasharray:400; stroke-dashoffset:400; animation:draw 1.4s .4s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.role{font:600 clamp(20px,2.6vw,25px) "Baloo 2",sans-serif; color:var(--ink-soft); margin:12px 0 0; min-height:1.4em}
+.role .typed{color:var(--ink); border-right:3px solid var(--yarn); padding-right:3px; animation:caret .8s step-end infinite}
+@keyframes caret{50%{border-color:transparent}}
+.lead{max-width:46ch; margin:14px 0 20px}
+.tags{display:flex; flex-wrap:wrap; gap:12px 10px; position:relative; padding-top:22px}
+.tags::before{content:""; position:absolute; left:-30px; right:8%; top:6px; height:2px; background:var(--yarn-d); border-radius:2px; transform:rotate(-1deg)}
+.tagbtn{position:relative; font:700 16px "Baloo 2",sans-serif; color:var(--ink); text-decoration:none; background:var(--paper); border:2.5px solid var(--line); border-radius:10px 10px 14px 14px; padding:8px 16px 6px 24px; cursor:pointer; transform-origin:50% -16px; animation:swing 3.2s ease-in-out infinite; box-shadow:3px 3px 0 var(--line)}
+.tagbtn::before{content:""; position:absolute; left:9px; top:50%; width:7px; height:7px; border-radius:50%; border:2px solid var(--line); transform:translateY(-50%)}
+.tagbtn::after{content:""; position:absolute; left:50%; top:-18px; width:2px; height:16px; background:var(--yarn-d)}
+.tagbtn:nth-child(2){animation-delay:-.8s} .tagbtn:nth-child(3){animation-delay:-1.6s} .tagbtn:nth-child(4){animation-delay:-2.4s}
+.tagbtn:hover{background:var(--yarn-l); animation-play-state:paused}
+.tagbtn.go{background:var(--yarn); color:#1E3313}
+@keyframes swing{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.hint{font-size:14px; color:var(--ink-soft); margin-top:18px; font-style:italic}
+
+.scene{position:relative; aspect-ratio:1; width:min(100%,460px); justify-self:center}
+.scene .floor{position:absolute; left:6%; right:0; bottom:9%; height:12%; border-radius:50%; background:var(--bg2); border:2.5px solid var(--line)}
+.scene .cat{position:absolute; left:2%; bottom:11%; width:68%; cursor:pointer; overflow:visible}
+.scene .ballwrap{position:absolute; left:70%; bottom:12%; width:19%; aspect-ratio:1; cursor:pointer}
+.scene .ballwrap svg{display:block; width:100%; height:100%; overflow:visible; animation:wobble 2.6s ease-in-out infinite}
+@keyframes wobble{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg) translateX(3px)}}
+.scene.batted .ballwrap{animation:fly 1.1s cubic-bezier(.45,0,.75,.4) forwards}
+.scene.batted .ballwrap svg{animation:spin .35s linear infinite}
+@keyframes fly{0%{transform:translate(0,0)}25%{transform:translate(16vw,-70px)}100%{transform:translate(70vw,0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scene .say{position:absolute; left:50%; top:4%; background:var(--paper); border:2.5px solid var(--line); border-radius:16px; padding:6px 12px; font:700 15px "Baloo 2",sans-serif; box-shadow:3px 3px 0 var(--line); opacity:0; transform:scale(.6); transform-origin:10% 100%; transition:.3s cubic-bezier(.34,1.56,.64,1); pointer-events:none}
+.scene .say::after{content:""; position:absolute; left:18px; bottom:-9px; width:14px; height:14px; background:var(--paper); border-right:2.5px solid var(--line); border-bottom:2.5px solid var(--line); transform:rotate(45deg)}
+.scene:hover .say,.scene.batted .say{opacity:1; transform:scale(1)}
+.scene.batted .say .a{display:none} .scene .say .b{display:none} .scene.batted .say .b{display:inline}
+
+/* cat parts */
+.cat .tail{transform-origin:212px 236px; animation:tail 2.4s ease-in-out infinite}
+@keyframes tail{0%,100%{transform:rotate(0)}50%{transform:rotate(14deg)}}
+.cat .ear-r{transform-origin:186px 78px; animation:twitch 6s ease-in-out infinite}
+@keyframes twitch{0%,92%,100%{transform:rotate(0)}95%{transform:rotate(-12deg)}}
+.cat .lids{transform-origin:150px 116px; transform:scaleY(0); animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(0)}96%,98%{transform:scaleY(1)}}
+.cat .paw{transform-origin:178px 205px}
+.batting .cat .paw{animation:bat .5s ease-in-out}
+@keyframes bat{0%{transform:rotate(0)}35%{transform:rotate(25deg)}60%{transform:rotate(-62deg)}100%{transform:rotate(0)}}
+.cat .zz{display:none}
+.cat.sleep .eyes-open{display:none}
+.cat.sleep .zz{display:block}
+.cat .zz text{font:800 22px "Baloo 2",sans-serif; fill:var(--ink-soft); animation:zz 3s ease-in-out infinite}
+.cat .zz text:nth-of-type(2){animation-delay:1s} .cat .zz text:nth-of-type(3){animation-delay:2s}
+@keyframes zz{0%{opacity:0; transform:translate(0,0)}30%{opacity:1}100%{opacity:0; transform:translate(14px,-30px)}}
+.cat.sleep .tail{animation-duration:5s}
+
+/* ---------- trail ---------- */
+.trail{position:relative}
+.viewport{position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; perspective:1300px}
+.world{position:absolute; left:0; top:0; transform-origin:0 0; transform-style:preserve-3d; will-change:transform}
+.floorgrid{position:absolute; background-image:radial-gradient(circle at 1px 1px, var(--dot) 2.2px, transparent 0); background-size:46px 46px; pointer-events:none}
+.paws{position:absolute; left:0; top:0; overflow:visible; pointer-events:none}
+.paws use{fill:var(--ink); opacity:.11}
+.yarnsvg{position:absolute; left:0; top:0; width:1px; height:1px; overflow:visible; pointer-events:none}
+.route{fill:none; stroke:var(--ink-soft); stroke-width:3; stroke-dasharray:2 14; stroke-linecap:round; opacity:.45}
+.thread{fill:none; stroke:var(--yarn); stroke-width:6; stroke-linecap:round}
+.stop{position:absolute; transform-origin:50% 100%; transform-style:preserve-3d}
+.card{position:relative; background:var(--paper); border:2.5px solid var(--line); border-radius:22px; padding:20px 22px; box-shadow:var(--shadow)}
+.card::after{content:""; position:absolute; left:50%; bottom:-34px; width:3px; height:32px; background:var(--yarn-d); transform:translateX(-50%)}
+.kicker{font:700 12.5px "Baloo 2",sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft)}
+.card h2{font-size:34px; font-weight:800; margin:2px 0 8px}
+.card h3{font-size:28px; font-weight:800; margin:2px 0 6px}
+.card p{margin:0 0 10px; font-size:15px}
+.card .muted{color:var(--ink-soft)}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px}
+.chips span{font:700 12.5px "Baloo 2",sans-serif; padding:2px 10px; border-radius:999px; border:2px solid var(--line); background:var(--yarn-l); color:var(--ink)}
+.row2{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center}
+.ghost{font:700 14px "Baloo 2",sans-serif; text-decoration:none; border-bottom:2px solid var(--yarn)}
+.ghost:hover{border-bottom-width:4px}
+.ghost:focus-visible{outline:3px dashed var(--yarn-d); outline-offset:3px}
+
+.about{width:680px}
+.about .cols{display:grid; grid-template-columns:1.5fr 1fr; gap:18px; align-items:start}
+.about ul{list-style:none; padding:0; margin:6px 0 0; display:grid; gap:4px; font-size:14.5px; line-height:1.5}
+.about li{display:flex; gap:8px}
+.about li::before{content:"🧶"; font-size:12px; margin-top:2px}
+.pols{position:relative; height:250px}
+.pol{background:var(--paper); border:2.5px solid var(--line); padding:7px 7px 26px; box-shadow:3px 3px 0 var(--line); position:absolute; width:150px; margin:0; transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.pol img{display:block; aspect-ratio:1; object-fit:cover; width:100%; border:2px solid var(--line)}
+.pol figcaption{position:absolute; bottom:3px; left:0; right:0; text-align:center; font:600 13px "Baloo 2",sans-serif; color:var(--ink-soft)}
+.pol:nth-child(1){left:0; top:26px; transform:rotate(-7deg)}
+.pol:nth-child(2){right:0; top:0; transform:rotate(6deg)}
+.pol:hover{transform:rotate(0) scale(1.08); z-index:2}
+
+.proj{width:450px}
+.art{height:96px; border-radius:14px; border:2.5px solid var(--line); display:grid; place-items:center; overflow:hidden; margin-bottom:12px; background:#CDEBB8}
+.skills{width:520px}
+.skills .chips span{font-size:14px; padding:4px 12px; background:var(--paper); box-shadow:2px 2px 0 var(--line)}
+.skills .chips span:nth-child(3n+1){background:var(--yarn-l)} .skills .chips span:nth-child(3n+2){background:var(--cream); color:#3A2A20}
+
+.ball{position:absolute; left:0; top:0; width:1px; height:1px; overflow:visible; pointer-events:none}
+
+.progress{position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:30; display:flex; gap:9px; padding:7px 11px; background:var(--paper); border:2.5px solid var(--line); border-radius:999px; box-shadow:3px 3px 0 var(--line); opacity:0; pointer-events:none; transition:opacity .3s}
+.progress.on{opacity:1; pointer-events:auto}
+.progress button{width:14px; height:14px; padding:0; border-radius:50%; border:2px solid var(--line); background:var(--paper); cursor:pointer; transition:transform .2s}
+.progress button[aria-current="true"]{background:var(--yarn); transform:scale(1.3)}
+.progress button:focus-visible{outline:3px dashed var(--yarn-d); outline-offset:2px}
+
+/* mini art (from the sticker book) */
+.check{display:flex; flex-direction:column; gap:6px}
+.check div{display:flex; align-items:center; gap:8px; font:600 13px "Baloo 2",sans-serif; color:#3A2A20}
+.check i{width:16px; height:16px; border:2.5px solid #3A2A20; border-radius:5px; background:#fff; position:relative}
+.check i::after{content:""; position:absolute; left:3px; top:0; width:5px; height:9px; border:solid #3A2A20; border-width:0 3px 3px 0; transform:rotate(45deg) scale(0)}
+.check div:nth-child(1) i::after{animation:tick 4s .2s infinite} .check div:nth-child(2) i::after{animation:tick 4s 1.2s infinite} .check div:nth-child(3) i::after{animation:tick 4s 2.2s infinite}
+@keyframes tick{0%,10%{transform:rotate(45deg) scale(0)}20%,80%{transform:rotate(45deg) scale(1)}90%,100%{transform:rotate(45deg) scale(0)}}
+.rank{display:flex; flex-direction:column; gap:5px; width:70%}
+.rank div{display:flex; align-items:center; gap:8px; background:#fff; border:2.5px solid #3A2A20; border-radius:8px; padding:1px 8px; font:600 12px "Baloo 2",sans-serif; color:#3A2A20}
+.rank b{width:20px} .rank i{flex:1; height:6px; border-radius:3px; background:#CDEBB8}
+.rank em{font-style:normal; font-size:10px; background:#7CC35A; border-radius:999px; padding:0 6px}
+.pg{display:grid; grid-template-columns:repeat(7,13px); gap:3px}
+.pg i{width:13px; height:13px; border-radius:3px; background:#fff; border:2px solid #3A2A20}
+.pg i.w{background:#3A2A20} .pg i.s{background:#7CC35A} .pg i.g{background:#FFE97A}
+.pg i.p{animation:light 4.2s linear infinite; animation-delay:calc(var(--d) * .35s)}
+@keyframes light{0%,8%{background:#fff}12%,70%{background:#7CC35A}80%,100%{background:#fff}}
+.cal{display:grid; grid-template-columns:repeat(7,13px); gap:4px}
+.cal i{width:13px; height:13px; border-radius:4px; background:#fff; border:2px solid #3A2A20}
+.cal i.on{background:#F4A259; animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+.lanes{position:relative; width:78%; height:76px}
+.lanes i{position:absolute; left:0; right:22px; height:6px; border-radius:3px; background:#fff; border:2px solid #3A2A20}
+.lanes i:nth-child(1){top:6px} .lanes i:nth-child(2){top:33px} .lanes i:nth-child(3){top:60px}
+.lanes .dock{position:absolute; right:0; width:18px; height:18px; border:2.5px solid #3A2A20; border-radius:5px}
+.lanes .d1{top:15px; background:#FFE97A} .lanes .d2{top:42px; background:#F4A259}
+.lanes .bot{position:absolute; left:0; width:16px; height:16px; border-radius:50%; border:2.5px solid #3A2A20; background:#7CC35A; animation:haul 4.4s ease-in-out infinite}
+.lanes .r1{top:1px} .lanes .r2{top:28px; background:#fff; animation-direction:reverse; animation-delay:-1.4s} .lanes .r3{top:55px; animation-delay:-2.6s}
+@keyframes haul{0%,10%{transform:translateX(0)}50%,60%{transform:translateX(250px)}100%{transform:translateX(0)}}
+
+/* ---------- contact ---------- */
+.contact{min-height:100vh; display:grid; place-items:center; text-align:center; padding:100px 24px 30px; position:relative}
+.contact h2{font-size:clamp(36px,6vw,62px); font-weight:800}
+.contact p{max-width:46ch; margin:10px auto 22px; color:var(--ink-soft)}
+.contact .row2{justify-content:center}
+.nap{width:min(250px,64vw); margin:28px auto 0; position:relative}
+.nap .cat{display:block; width:100%; overflow:visible}
+.nap .smiski{position:absolute; right:-74px; bottom:8px; width:72px; transition:transform .4s cubic-bezier(.34,1.56,.64,1); filter:drop-shadow(0 3px 2px rgba(58,42,32,.25))}
+.nap .smiski:hover{transform:translateY(-8px) rotate(-6deg)}
+footer{text-align:center; font-size:14px; color:var(--ink-soft); padding:6px 0 34px}
+
+/* resume dialog */
+.resume-dlg{border:2.5px solid var(--line); border-radius:22px; padding:0; background:var(--paper); color:var(--ink); width:min(94vw,820px); max-height:92vh; box-shadow:8px 8px 0 var(--line); overflow:hidden}
+.resume-dlg::backdrop{background:rgba(58,42,32,.5); backdrop-filter:blur(3px)}
+.resume-dlg[open]{display:flex; flex-direction:column; animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.9); opacity:0}to{transform:scale(1); opacity:1}}
+.resume-bar{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 14px; border-bottom:2.5px solid var(--line); background:var(--yarn-l); font:700 16px "Baloo 2",sans-serif}
+.resume-dlg .scroll{overflow:auto} .resume-dlg img{display:block; width:100%; background:#fff}
+
+#sparkles{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:50}
+
+/* ---------- stacked layout: phones, short screens, reduced motion ---------- */
+.stacked .viewport{position:relative; height:auto; overflow:visible; perspective:none}
+.stacked .world{position:relative; transform:none!important; display:flex; flex-direction:column; align-items:center; gap:56px; padding:30px 16px 40px}
+.stacked .world::before{content:""; position:absolute; left:50%; top:0; bottom:0; width:4px; margin-left:-2px; background:repeating-linear-gradient(var(--yarn) 0 18px, transparent 18px 26px); border-radius:2px}
+.stacked .floorgrid,.stacked .paws,.stacked .yarnsvg,.stacked .ball,.stacked .progress{display:none}
+.stacked .stop{position:relative; z-index:1; left:auto!important; top:auto!important; width:100%; display:flex; justify-content:center; transform:none!important; opacity:1!important}
+.stacked .card{max-width:100%; transition:transform .6s cubic-bezier(.34,1.56,.64,1), opacity .6s; transform-origin:50% 100%}
+.stacked .card::after{display:none}
+.stacked .stop:not(.in) .card{opacity:0; transform:perspective(900px) rotateX(35deg) translateY(30px)}
+
+@media (max-width:760px){
+  .intro{grid-template-columns:1fr; padding-top:80px; gap:6px}
+  .scene{width:min(100%,320px); order:-1}
+  .bar a,.bar button{padding:5px 8px; font-size:14px}
+  .bar .me span{display:none}
+  .about .cols{grid-template-columns:1fr}
+  .pols{height:210px; max-width:300px; width:100%; margin:0 auto}
+  .pol{width:135px}
+  .card{padding:18px 16px}
+  .card h2{font-size:30px}
+  .lanes .bot{animation-name:haulS}
+  .nap .smiski{right:-40px; width:54px}
+}
+@keyframes haulS{0%,10%{transform:translateX(0)}50%,60%{transform:translateX(170px)}100%{transform:translateX(0)}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+  .yarnword path{stroke-dashoffset:0}
+  .stacked .stop:not(.in) .card{opacity:1; transform:none}
+  #sparkles{display:none}
+}
+</style>
 </head>
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="p-approve" viewBox="0 0 148 247"><image href="figures/approve.png" width="148" height="247"/></symbol>
-  <symbol id="p-research" viewBox="0 0 162 238"><image href="figures/research.png" width="162" height="238"/></symbol>
-  <symbol id="p-present" viewBox="0 0 165 276"><image href="figures/present.png" width="165" height="276"/></symbol>
-  <symbol id="p-idea" viewBox="0 0 127 259"><image href="figures/idea.png" width="127" height="259"/></symbol>
-  <symbol id="p-road" viewBox="0 0 235 246"><image href="figures/road.png" width="235" height="246"/></symbol>
-  <symbol id="p-bubbles" viewBox="0 0 254 277"><image href="figures/bubbles.png" width="254" height="277"/></symbol>
-  <symbol id="p-plane" viewBox="0 0 204 268"><image href="figures/plane.png" width="204" height="268"/></symbol>
+  <symbol id="paw" viewBox="0 0 40 40"><ellipse cx="20" cy="26" rx="9" ry="8"/><circle cx="9" cy="15" r="4"/><circle cx="16" cy="9" r="4"/><circle cx="24" cy="9" r="4"/><circle cx="31" cy="15" r="4"/></symbol>
+  <symbol id="yarnball" viewBox="-40 -40 80 80">
+    <circle r="34" fill="#7CC35A" stroke="#3A2A20" stroke-width="3.5"/>
+    <g fill="none" stroke="#4E9A35" stroke-width="3" stroke-linecap="round">
+      <path d="M-30 -10 C-10 -24 14 -24 30 -8"/><path d="M-32 4 C-10 -12 16 -10 32 8"/><path d="M-26 18 C-6 4 14 6 26 20"/>
+      <path d="M-8 -32 C-22 -8 -20 14 -6 32"/><path d="M8 -32 C20 -10 22 12 10 32"/>
+    </g>
+  </symbol>
   <symbol id="p-sunbath" viewBox="0 0 254 163"><image href="figures/sunbath.png" width="254" height="163"/></symbol>
-  <symbol id="p-sing" viewBox="0 0 148 279"><image href="figures/sing.png" width="148" height="279"/></symbol>
-  <symbol id="p-skate" viewBox="0 0 178 280"><image href="figures/skate.png" width="178" height="280"/></symbol>
-  <symbol id="p-garden" viewBox="0 0 178 238"><image href="figures/garden.png" width="178" height="238"/></symbol>
-  <symbol id="p-walk" viewBox="0 0 220 262"><image href="figures/walk.png" width="220" height="262"/></symbol>
-  <symbol id="p-group" viewBox="0 0 241 169"><image href="figures/group.png" width="241" height="169"/></symbol>
 </svg>
-
-<div class="floaters" aria-hidden="true">
-  <span class="s1" style="left:5%;top:16%;background:var(--g3);animation-delay:-2s"></span>
-  <span class="s2" style="left:12%;top:72%;background:var(--g4);animation-delay:-5s;width:40px;height:40px"></span>
-  <span class="s3" style="left:86%;top:10%;background:var(--g2);animation-delay:-1s;width:80px;height:80px"></span>
-  <span class="s1" style="left:90%;top:62%;background:var(--g3);animation-delay:-8s;width:50px;height:50px"></span>
-  <span class="s2" style="left:46%;top:88%;background:var(--g4);animation-delay:-3s;width:36px;height:36px"></span>
-  <span class="s3" style="left:68%;top:42%;background:var(--g2);animation-delay:-6s;width:44px;height:44px"></span>
-</div>
 <canvas id="sparkles" aria-hidden="true"></canvas>
-<div class="smk corner" title="hi" aria-hidden="true"><svg viewBox="0 0 254 163"><use href="#p-sunbath"/></svg></div>
 
-<nav class="nav" aria-label="Sections">
-  <ul>
-    <li><a href="#projects">projects</a></li>
-    <li><a href="#about">about</a></li>
-    <li><a href="#contact">say hi</a></li>
-    <li><button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button></li>
-  </ul>
+<nav class="bar" aria-label="Sections">
+  <a class="me" href="#top" data-go="top"><i></i><span>nicole</span></a>
+  <a href="#about" data-go="about">about</a>
+  <a href="#projects" data-go="projects">projects</a>
+  <button type="button" class="resume-btn">resume</button>
+  <a href="#contact" data-go="contact">say hi</a>
+  <button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
-<main class="wrap">
-  <section class="hero">
+<main>
+  <section class="intro" id="top">
     <div>
       <span class="eyebrow">UBC computer science · vancouver</span>
-      <h1>hi, i'm <span class="squiggle">Nicole</span> <span class="wave">👋</span></h1>
+      <h1>hi, i'm <span class="nw"><span class="yarnword">Nicole<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 12 C40 2 70 20 100 10 S160 2 198 12"/></svg></span> 👋</span></h1>
       <p class="role">i make <span class="typed" id="typed">things i wish existed</span></p>
       <p class="lead">Computer science student at the University of British Columbia who likes shipping small, polished apps for real life. An all-in-one iOS planner, search algorithms written from scratch in C++, and a privacy-first period tracker so far. Looking for a summer 2027 internship.</p>
-      <div class="btns">
-        <a class="btn" href="#projects">see my stuff ✨</a>
-        <button class="btn alt resume-btn" type="button">resume</button>
-        <a class="btn alt" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
+      <div class="tags" role="group" aria-label="Where to?">
+        <button class="tagbtn go" type="button" data-go="projects">see my stuff ✨</button>
+        <button class="tagbtn" type="button" data-go="about">about me</button>
+        <button class="tagbtn resume-btn" type="button">resume</button>
+        <a class="tagbtn" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
       </div>
+      <p class="hint">psst, click the cat (or just scroll) and she'll show you around</p>
     </div>
-    <div>
-      <div class="stage" id="stage" role="img" aria-label="A little green figure researching on a laptop. Click for a good idea." tabindex="0">
-        <div class="pad a"></div>
-        <div class="smk hero-smk"><svg viewBox="0 0 162 238"><use href="#p-research"/></svg></div>
-        <div class="smk idea"><svg viewBox="0 0 40 40"><circle class="bulb" cx="20" cy="16" r="12"/><rect class="prop" x="14" y="27" width="12" height="7" rx="2"/><path d="M6 6 l-3 -3 M34 6 l3 -3 M20 -2 v-3" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div class="smk buddy"><svg viewBox="0 0 254 277"><use href="#p-bubbles"/></svg></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="projects">
-    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div><h2>things i've made</h2></div>
-    <div class="grid">
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:66%"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div></div>
-        <div class="smk edge" aria-hidden="true"><svg viewBox="0 0 204 268"><use href="#p-plane"/></svg></div>
-        <div class="art a1"><div class="check"><div><i></i>budget: on track</div><div><i></i>CPSC lecture 2pm</div><div><i></i>finish problem set</div></div></div>
-        <h3><a class="open" href="projects/lifetracker.html">LifeTracker</a></h3>
-        <p>My own Notion. An all-in-one iOS planner that pulls budgeting, calendar, to-do lists, class schedules, and notes into one interface, built from interconnected SwiftUI modules over shared data models. I use it every day.</p>
-        <div class="tags"><span>Swift</span><span>SwiftUI</span><span>iOS</span></div>
-        <div class="links2"><a class="go" href="projects/lifetracker.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/LifeTracker" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
-      </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:64%"><svg viewBox="0 0 148 247"><use href="#p-approve"/></svg></div></div>
-        <div class="art a2"><div class="rank"><div><b>98</b><i></i><em>NEW</em></div><div><b>91</b><i></i></div><div><b>84</b><i></i><em>NEW</em></div></div></div>
-        <h3><a class="open" href="projects/internscout.html">InternScout</a></h3>
-        <p>A Mac app that pulls about 13,000 live internship postings from 1,700 companies and ranks every one against my profile, so the best matches are always at the top. It tells me what's new since I last checked.</p>
-        <div class="tags"><span>C++17</span><span>Dear ImGui</span><span>libcurl</span><span>multithreading</span></div>
-        <div class="links2"><a class="go" href="projects/internscout.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/internscout" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
-      </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:62%"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div></div>
-        <div class="smk hang" aria-hidden="true"><svg viewBox="0 0 235 246"><use href="#p-road"/></svg></div>
-        <div class="art a3"><div class="pg">
-          <i class="s p" style="--d:0"></i><i class="p" style="--d:1"></i><i class="p" style="--d:2"></i><i class="w"></i><i></i><i></i><i></i>
-          <i></i><i class="w"></i><i class="p" style="--d:3"></i><i class="w"></i><i></i><i class="w"></i><i></i>
-          <i></i><i></i><i class="p" style="--d:4"></i><i class="p" style="--d:5"></i><i class="p" style="--d:6"></i><i class="w"></i><i></i>
-          <i></i><i class="w"></i><i></i><i class="w"></i><i class="p" style="--d:7"></i><i class="p" style="--d:8"></i><i class="g"></i>
-        </div></div>
-        <h3><a class="open" href="projects/search.html">Search Algorithm Explorer</a></h3>
-        <p>A* pathfinding and Minimax adversarial search, implemented from scratch in C++ with full game-tree traversal, to study how heuristics trade accuracy for speed in game AI.</p>
-        <div class="tags"><span>C++</span><span>A*</span><span>Minimax</span><span>game AI</span></div>
-        <div class="links2"><a class="go" href="projects/search.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/astar" target="_blank" rel="noopener">A* repo <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/minimax" target="_blank" rel="noopener">Minimax repo <span class="ar">→</span></a></div>
-      </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:8%"><svg viewBox="0 0 241 169"><use href="#p-group"/></svg></div></div>
-        <div class="art a4"><div class="cal"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="lock">🔒 offline</span></div>
-        <h3><a class="open" href="projects/cycle.html">Cycle</a></h3>
-        <p>A fully offline period tracker for macOS in C++20 with SDL2. Health data never leaves your machine, because it shouldn't have to.</p>
-        <div class="tags"><span>C++20</span><span>SDL2</span><span>CMake</span><span>privacy</span></div>
-        <div class="links2"><a class="go" href="projects/cycle.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/cycle" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
-      </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:66%"><svg viewBox="0 0 220 262"><use href="#p-walk"/></svg></div></div>
-        <div class="art a5"><div class="lanes"><i></i><i></i><i></i><b class="bot r1"></b><b class="bot r2"></b><b class="bot r3"></b><span class="dock d1"></span><span class="dock d2"></span></div></div>
-        <h3><a class="open" href="projects/robots.html">Robot Router</a></h3>
-        <p>Our team's entry for the Amazon Robotics Hackathon 2026. It routes warehouse robots through one-lane aisles by booking the floor ahead in space and time, testing every plan on an exact copy of the game, and keeping the best. 84 points to the example driver's 59.</p>
-        <div class="tags"><span>Python</span><span>space-time A*</span><span>planning</span><span>hackathon</span></div>
-        <div class="links2"><a class="go" href="projects/robots.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/ArHackathon2026" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
-      </div>
+    <div class="scene" id="scene">
+      <div class="floor"></div>
+      <div class="say" aria-hidden="true"><span class="a">wanna see my stuff?</span><span class="b">follow the yarn!</span></div>
+      <svg class="cat" id="cat" viewBox="0 0 300 300" role="button" tabindex="0" aria-label="A ginger cat next to a ball of yarn. Click and she'll bat it toward my projects."></svg>
+      <div class="ballwrap" id="ballwrap" aria-hidden="true"><svg viewBox="-40 -40 80 80"><use href="#yarnball"/></svg></div>
     </div>
   </section>
 
-  <section aria-label="Skills" class="skills">
-    <div class="smk skater" aria-hidden="true"><svg viewBox="0 0 178 280"><use href="#p-skate"/></svg></div>
-    <div class="marquee">
-      <div class="track" id="track">
-        <span class="chip">C++</span><span class="chip">Swift</span><span class="chip">Java</span><span class="chip">Python</span>
-        <span class="chip">JavaScript</span><span class="chip">HTML / CSS</span><span class="chip">SwiftUI</span><span class="chip">Git / GitHub</span>
-        <span class="chip">Xcode</span><span class="chip">VS Code</span><span class="chip">A* search</span><span class="chip">Minimax</span>
-        <span class="chip">data structures</span><span class="chip">OOP design</span><span class="chip">API integration</span><span class="chip">SDL2 / CMake</span>
-      </div>
-    </div>
-  </section>
+  <section class="trail" id="trail">
+    <div class="viewport">
+      <div class="world" id="world">
+        <div class="floorgrid" id="floorgrid"></div>
+        <svg class="paws" id="paws" width="1" height="1" aria-hidden="true"></svg>
+        <svg class="yarnsvg" aria-hidden="true"><path class="route" id="route"/><path class="thread" id="thread"/></svg>
 
-  <section id="about">
-    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 178 238"><use href="#p-garden"/></svg></div><h2>a little about me</h2></div>
-    <div class="about">
-      <div>
-        <p>I'm studying computer science at the University of British Columbia in Vancouver, class of 2029. I learn best by building things I'd actually use. Most of my projects started as "why isn't there a nice app for this?" and turned into one.</p>
-        <ul>
-          <li>Placed 3rd overall at the UBC Amazon Robotics Hackathon.</li>
-          <li>Provincial junior badminton champion. I also coached camps of 25+ kids at Shuttlesport Badminton Academy.</li>
-          <li>Led my high school physics club and coached our team at the UBC Physics Olympics.</li>
-          <li>Coursework so far: data structures &amp; algorithms, computer systems, software construction, discrete math, linear algebra.</li>
-          <li>Collector of Smiskis that hide in corners.</li>
-        </ul>
-      </div>
-      <div class="aside">
-        <div class="pad b"></div>
-        <div class="smk thinker" aria-hidden="true"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div>
-        <div class="fan">
-          <figure class="polaroid p1">
-            <div class="photo"><img src="arena.jpg" alt="Nicole at a concert in an arena"></div>
-            <figcaption>concert night</figcaption>
-          </figure>
-          <figure class="polaroid p2">
-            <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:10%"><svg viewBox="0 0 148 279"><use href="#p-sing"/></svg></div></div>
-            <div class="photo"><img src="matcha.jpg" alt="Nicole sipping a matcha latte on a bench"></div>
-            <figcaption>matcha break</figcaption>
-          </figure>
+        <div class="stop" data-stop="about">
+          <article class="card about">
+            <span class="kicker">stop 1 · about</span>
+            <h2>a little about me</h2>
+            <div class="cols">
+              <div>
+                <p>I'm studying computer science at the University of British Columbia in Vancouver, class of 2029. I learn best by building things I'd actually use. Most of my projects started as "why isn't there a nice app for this?" and turned into one.</p>
+                <ul>
+                  <li>Placed 3rd overall at the UBC Amazon Robotics Hackathon.</li>
+                  <li>Provincial junior badminton champion. I also coached camps of 25+ kids at Shuttlesport Badminton Academy.</li>
+                  <li>Led my high school physics club and coached our team at the UBC Physics Olympics.</li>
+                  <li>Coursework so far: data structures &amp; algorithms, computer systems, software construction, discrete math, linear algebra.</li>
+                  <li>Collector of Smiskis that hide in corners.</li>
+                </ul>
+              </div>
+              <div class="pols">
+                <figure class="pol"><img src="arena.jpg" alt="Nicole at a concert in an arena"><figcaption>concert night</figcaption></figure>
+                <figure class="pol"><img src="matcha.jpg" alt="Nicole sipping a matcha latte on a bench"><figcaption>matcha break</figcaption></figure>
+              </div>
+            </div>
+          </article>
         </div>
+
+        <div class="stop" data-stop="projects">
+          <article class="card proj">
+            <div class="art"><div class="check"><div><i></i>budget: on track</div><div><i></i>CPSC lecture 2pm</div><div><i></i>finish problem set</div></div></div>
+            <span class="kicker">stop 2 · project</span>
+            <h3>LifeTracker</h3>
+            <p class="muted">My own Notion. An all-in-one iOS planner that pulls budgeting, calendar, to-do lists, class schedules, and notes into one interface, built from interconnected SwiftUI modules over shared data models. I use it every day.</p>
+            <div class="chips"><span>Swift</span><span>SwiftUI</span><span>iOS</span></div>
+            <div class="row2"><a class="btn small" href="projects/lifetracker.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/LifeTracker" target="_blank" rel="noopener">github</a></div>
+          </article>
+        </div>
+
+        <div class="stop">
+          <article class="card proj">
+            <div class="art"><div class="rank"><div><b>98</b><i></i><em>NEW</em></div><div><b>91</b><i></i></div><div><b>84</b><i></i><em>NEW</em></div></div></div>
+            <span class="kicker">stop 3 · project</span>
+            <h3>InternScout</h3>
+            <p class="muted">A Mac app that pulls about 13,000 live internship postings from 1,700 companies and ranks every one against my profile, so the best matches are always at the top. It tells me what's new since I last checked.</p>
+            <div class="chips"><span>C++17</span><span>Dear ImGui</span><span>libcurl</span><span>multithreading</span></div>
+            <div class="row2"><a class="btn small" href="projects/internscout.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/internscout" target="_blank" rel="noopener">github</a></div>
+          </article>
+        </div>
+
+        <div class="stop">
+          <article class="card proj">
+            <div class="art" style="background:#fff"><div class="pg">
+              <i class="s p" style="--d:0"></i><i class="p" style="--d:1"></i><i class="p" style="--d:2"></i><i class="w"></i><i></i><i></i><i></i>
+              <i></i><i class="w"></i><i class="p" style="--d:3"></i><i class="w"></i><i></i><i class="w"></i><i></i>
+              <i></i><i></i><i class="p" style="--d:4"></i><i class="p" style="--d:5"></i><i class="p" style="--d:6"></i><i class="w"></i><i></i>
+              <i></i><i class="w"></i><i></i><i class="w"></i><i class="p" style="--d:7"></i><i class="p" style="--d:8"></i><i class="g"></i>
+            </div></div>
+            <span class="kicker">stop 4 · project</span>
+            <h3>Search Algorithm Explorer</h3>
+            <p class="muted">A* pathfinding and Minimax adversarial search, implemented from scratch in C++ with full game-tree traversal, to study how heuristics trade accuracy for speed in game AI.</p>
+            <div class="chips"><span>C++</span><span>A*</span><span>Minimax</span><span>game AI</span></div>
+            <div class="row2"><a class="btn small" href="projects/search.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/astar" target="_blank" rel="noopener">A* repo</a><a class="ghost" href="https://github.com/nicole-li7/minimax" target="_blank" rel="noopener">Minimax repo</a></div>
+          </article>
+        </div>
+
+        <div class="stop">
+          <article class="card proj">
+            <div class="art" style="background:#FFE8C7"><div class="cal"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+            <span class="kicker">stop 5 · project</span>
+            <h3>Cycle</h3>
+            <p class="muted">A fully offline period tracker for macOS in C++20 with SDL2. Health data never leaves your machine, because it shouldn't have to.</p>
+            <div class="chips"><span>C++20</span><span>SDL2</span><span>CMake</span><span>privacy</span></div>
+            <div class="row2"><a class="btn small" href="projects/cycle.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/cycle" target="_blank" rel="noopener">github</a></div>
+          </article>
+        </div>
+
+        <div class="stop">
+          <article class="card proj">
+            <div class="art"><div class="lanes"><i></i><i></i><i></i><b class="bot r1"></b><b class="bot r2"></b><b class="bot r3"></b><span class="dock d1"></span><span class="dock d2"></span></div></div>
+            <span class="kicker">stop 6 · project</span>
+            <h3>Robot Router</h3>
+            <p class="muted">Our team's entry for the Amazon Robotics Hackathon 2026. It routes warehouse robots through one-lane aisles by booking the floor ahead in space and time, testing every plan on an exact copy of the game, and keeping the best. 84 points to the example driver's 59.</p>
+            <div class="chips"><span>Python</span><span>space-time A*</span><span>planning</span><span>hackathon</span></div>
+            <div class="row2"><a class="btn small" href="projects/robots.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/ArHackathon2026" target="_blank" rel="noopener">github</a></div>
+          </article>
+        </div>
+
+        <div class="stop">
+          <article class="card skills">
+            <span class="kicker">stop 7 · skills</span>
+            <h3>what's in my yarn basket</h3>
+            <div class="chips">
+              <span>C++</span><span>Swift</span><span>Java</span><span>Python</span><span>JavaScript</span><span>HTML / CSS</span><span>SwiftUI</span><span>Git / GitHub</span>
+              <span>Xcode</span><span>VS Code</span><span>A* search</span><span>Minimax</span><span>data structures</span><span>OOP design</span><span>API integration</span><span>SDL2 / CMake</span>
+            </div>
+          </article>
+        </div>
+
+        <svg class="ball" aria-hidden="true"><g id="ballg"><use href="#yarnball" x="-40" y="-40" width="80" height="80"/></g></svg>
       </div>
     </div>
   </section>
 
-  <section id="contact" class="contact">
-    <h2>let's build something cute 🌱</h2>
-    <p>Open to internships, collabs, and chatting about apps. My inbox is friendly: <a href="mailto:nicole.li.2025@gmail.com">nicole.li.2025@gmail.com</a>, or <a href="mailto:nli28@student.ubc.ca">nli28@student.ubc.ca</a> for anything UBC.</p>
-    <div class="links">
-      <a class="btn big" href="mailto:nicole.li.2025@gmail.com">email me</a>
-      <a class="btn alt" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
-      <a class="btn alt" href="https://www.linkedin.com/in/nicole-l-445ab8330" target="_blank" rel="noopener">linkedin</a>
-      <button class="btn alt resume-btn" type="button">resume</button>
-    </div>
-    <div class="crowd" aria-hidden="true">
-      <div class="pad c"></div>
-      <div class="smk walk"><svg viewBox="0 0 235 246"><use href="#p-road"/></svg></div>
-      <div class="smk"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div>
-      <div class="smk"><svg viewBox="0 0 148 279"><use href="#p-sing"/></svg></div>
-      <div class="smk" style="width:130px"><svg viewBox="0 0 241 169"><use href="#p-group"/></svg></div>
-      <div class="smk walk2"><svg viewBox="0 0 220 262"><use href="#p-walk"/></svg></div>
+  <section class="contact" id="contact">
+    <div>
+      <h2>let's build something cute 🌱</h2>
+      <p>Open to internships, collabs, and chatting about apps. My inbox is friendly: <a href="mailto:nicole.li.2025@gmail.com">nicole.li.2025@gmail.com</a>, or <a href="mailto:nli28@student.ubc.ca">nli28@student.ubc.ca</a> for anything UBC.</p>
+      <div class="row2">
+        <a class="btn" href="mailto:nicole.li.2025@gmail.com">email me</a>
+        <a class="btn alt" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
+        <a class="btn alt" href="https://www.linkedin.com/in/nicole-l-445ab8330" target="_blank" rel="noopener">linkedin</a>
+        <button class="btn alt resume-btn" type="button">resume</button>
+      </div>
+      <div class="nap">
+        <svg class="cat sleep" id="napcat" viewBox="0 0 300 300" aria-hidden="true"></svg>
+        <svg class="smiski" viewBox="0 0 254 163" role="img" aria-label="a Smiski, hiding"><use href="#p-sunbath"/></svg>
+      </div>
     </div>
   </section>
 </main>
+
+<div class="progress" id="progress" aria-label="Trail stops"></div>
+
 <dialog id="resumeDlg" class="resume-dlg" aria-label="Resume">
   <div class="resume-bar">
     <span>Nicole Li · resume</span>
-    <span class="resume-actions"><a class="btn alt small" href="Nicole_Li_Resume.pdf" download="Nicole_Li_Resume.pdf">download pdf</a><button class="btn small" type="button" id="resumeClose">close ✕</button></span>
+    <span class="row2"><a class="btn alt small" href="Nicole_Li_Resume.pdf" download="Nicole_Li_Resume.pdf">download pdf</a><button class="btn small" type="button" id="resumeClose">close ✕</button></span>
   </div>
   <div class="scroll"><img src="resume.jpg" alt="Nicole Li's resume: UBC computer science, projects, skills, and activities"></div>
 </dialog>
-<footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
+<footer>made with ♥, one cat and a ball of yarn · © 2026 Nicole Li</footer>
 
 <script>
 (function(){
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // typed roles
+  // ---------- the cat (drawn once, used twice) ----------
+  var CAT = '' +
+    '<g class="tail"><path d="M212 236 C262 236 272 186 250 160 C240 148 226 152 232 166 C246 192 236 214 206 214" fill="#F4A259" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/>' +
+      '<path d="M246 168 l10 -4 M250 186 l11 0 M246 204 l10 5" stroke="#D9803B" stroke-width="4" stroke-linecap="round"/></g>' +
+    '<ellipse cx="150" cy="222" rx="70" ry="60" fill="#F4A259" stroke="#3A2A20" stroke-width="4"/>' +
+    '<ellipse cx="150" cy="236" rx="40" ry="40" fill="#FFE8C7"/>' +
+    '<path d="M90 206 l14 4 M88 226 l15 1 M210 206 l-14 4 M212 226 l-15 1" stroke="#D9803B" stroke-width="4" stroke-linecap="round"/>' +
+    '<g><path d="M96 92 L88 36 L132 66 Z" fill="#F4A259" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/><path d="M100 80 L96 50 L120 66 Z" fill="#FFD3A8"/></g>' +
+    '<g class="ear-r"><path d="M204 92 L212 36 L168 66 Z" fill="#F4A259" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/><path d="M200 80 L204 50 L180 66 Z" fill="#FFD3A8"/></g>' +
+    '<circle cx="150" cy="118" r="62" fill="#F4A259" stroke="#3A2A20" stroke-width="4"/>' +
+    '<path d="M138 62 q2 12 0 20 M150 58 v22 M162 62 q-2 12 0 20" stroke="#D9803B" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<ellipse cx="150" cy="142" rx="34" ry="24" fill="#FFE8C7"/>' +
+    '<g class="eyes-open"><g class="eyes"><ellipse cx="127" cy="116" rx="9" ry="12" fill="#3A2A20"/><ellipse cx="173" cy="116" rx="9" ry="12" fill="#3A2A20"/>' +
+      '<circle cx="130" cy="111" r="3.5" fill="#fff"/><circle cx="176" cy="111" r="3.5" fill="#fff"/></g>' +
+      '<g class="lids"><rect x="114" y="102" width="26" height="28" rx="12" fill="#F4A259"/><rect x="160" y="102" width="26" height="28" rx="12" fill="#F4A259"/></g></g>' +
+    '<g class="zz"><path d="M116 118 q11 9 22 0 M162 118 q11 9 22 0" stroke="#3A2A20" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<text x="205" y="62">z</text><text x="222" y="42">z</text><text x="240" y="24">z</text></g>' +
+    '<circle cx="111" cy="138" r="8" fill="#FFB38A" opacity=".7"/><circle cx="189" cy="138" r="8" fill="#FFB38A" opacity=".7"/>' +
+    '<path d="M144 132 h12 l-6 7 z" fill="#C8624A" stroke="#3A2A20" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M150 139 q-5 8 -12 4 M150 139 q5 8 12 4" stroke="#3A2A20" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<path d="M110 134 l-32 -6 M110 142 l-32 4 M190 134 l32 -6 M190 142 l32 4" stroke="#3A2A20" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<path d="M104 172 q46 18 92 0" stroke="#4E9A35" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="150" cy="184" r="7" fill="#FFE97A" stroke="#3A2A20" stroke-width="3"/>' +
+    '<ellipse cx="124" cy="276" rx="18" ry="12" fill="#FFE8C7" stroke="#3A2A20" stroke-width="4"/>' +
+    '<g class="paw"><path d="M178 205 C186 230 186 255 176 266" stroke="#3A2A20" stroke-width="4" fill="none"/><ellipse cx="176" cy="276" rx="18" ry="12" fill="#FFE8C7" stroke="#3A2A20" stroke-width="4"/></g>';
+  var catEl = document.getElementById('cat');
+  catEl.innerHTML = CAT;
+  document.getElementById('napcat').innerHTML = CAT;
+
+  // her eyes follow your pointer
+  var eyes = catEl.querySelector('.eyes');
+  if (!reduce) addEventListener('pointermove', function(e){
+    var r = catEl.getBoundingClientRect(), cx = r.left + r.width * .5, cy = r.top + r.height * .39;
+    var dx = e.clientX - cx, dy = e.clientY - cy, d = Math.hypot(dx, dy) || 1;
+    eyes.setAttribute('transform', 'translate(' + (dx / d * 4).toFixed(1) + ' ' + (dy / d * 4).toFixed(1) + ')');
+  });
+
+  // ---------- typed tagline ----------
   var roles = ['things i wish existed', 'things that make life easier'];
   var el = document.getElementById('typed'), ri = 0, ci = roles[0].length, del = false;
   function tick(){
     var word = roles[ri];
-    if(!del){ ci++; if(ci > word.length){ del = true; return setTimeout(tick, 1600); } }
-    else { ci--; if(ci < 0){ del = false; ri = (ri+1) % roles.length; ci = 0; } }
-    el.textContent = roles[ri].slice(0, Math.max(ci,0));
+    if (!del) { ci++; if (ci > word.length) { del = true; return setTimeout(tick, 1600); } }
+    else { ci--; if (ci < 0) { del = false; ri = (ri + 1) % roles.length; ci = 0; } }
+    el.textContent = roles[ri].slice(0, Math.max(ci, 0));
     setTimeout(tick, del ? 45 : 90);
   }
-  if(!reduce) setTimeout(tick, 1600);
+  if (!reduce) setTimeout(tick, 1600);
 
-  // hero: click for a good idea
-  var st = document.getElementById('stage');
-  function idea(){ st.classList.remove('hi'); void st.offsetWidth; st.classList.add('hi'); }
-  st.addEventListener('click', idea);
-  st.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); idea(); } });
-
-  // resume viewer
+  // ---------- resume viewer ----------
   var dlg = document.getElementById('resumeDlg');
   document.querySelectorAll('.resume-btn').forEach(function(b){ b.addEventListener('click', function(){ dlg.showModal(); }); });
   document.getElementById('resumeClose').addEventListener('click', function(){ dlg.close(); });
-  dlg.addEventListener('click', function(e){ if(e.target === dlg) dlg.close(); });
+  dlg.addEventListener('click', function(e){ if (e.target === dlg) dlg.close(); });
 
-  // marquee duplicate for seamless loop
-  var track = document.getElementById('track'); track.innerHTML += track.innerHTML;
+  // ---------- the yarn trail ----------
+  var trail = document.getElementById('trail'), world = document.getElementById('world');
+  var stops = [].slice.call(document.querySelectorAll('.stop'));
+  var route = document.getElementById('route'), thread = document.getElementById('thread');
+  var ballg = document.getElementById('ballg'), paws = document.getElementById('paws'), floorgrid = document.getElementById('floorgrid');
+  var progress = document.getElementById('progress'), vp = document.querySelector('.viewport');
+  var GAP = 1250, TRAVEL = 1, DWELL = .75, BALL_R = 34;
+  var mode = '', len = 0, stopLen = [], segs = [], cardH = [];
 
+  stops.forEach(function(s, i){
+    var b = document.createElement('button'); b.type = 'button';
+    b.setAttribute('aria-label', 'Go to ' + s.querySelector('h2,h3').textContent);
+    b.addEventListener('click', function(){ goStop(i); });
+    progress.appendChild(b);
+  });
+
+  // smooth curve through the points (Catmull-Rom as cubic Béziers)
+  function curve(pts){
+    var d = 'M' + pts[0].x + ' ' + pts[0].y;
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      d += ' C' + (p1.x + (p2.x - p0.x) / 6) + ' ' + (p1.y + (p2.y - p0.y) / 6) + ' ' + (p2.x - (p3.x - p1.x) / 6) + ' ' + (p2.y - (p3.y - p1.y) / 6) + ' ' + p2.x + ' ' + p2.y;
+    }
+    return d;
+  }
+
+  function layout(){
+    var wide = !reduce && innerWidth >= 900 && innerHeight >= 560;
+    document.body.classList.toggle('stacked', !wide);
+    var keepP = (mode === 'trail' && segs.length) ? scrollP() : null;
+    mode = wide ? 'trail' : 'stacked';
+    if (!wide) { trail.style.height = ''; reveal(); return; }
+
+    var pts = [{x: 0, y: 0}];
+    stops.forEach(function(s, i){ pts.push({x: GAP * (i + 1), y: i % 2 ? 150 : -110}); });
+    pts.push({x: GAP * (stops.length + 1), y: 40});
+    var d = curve(pts);
+    route.setAttribute('d', d); thread.setAttribute('d', d);
+    len = thread.getTotalLength();
+    thread.style.strokeDasharray = len + ' ' + len;
+
+    // how far along the yarn each stop sits
+    var samples = [];
+    for (var k = 0; k <= 3000; k++) { var L = len * k / 3000, q = thread.getPointAtLength(L); samples.push([L, q.x, q.y]); }
+    stopLen = [];
+    stops.forEach(function(s, i){
+      var tx = pts[i + 1].x, ty = pts[i + 1].y, best = 0, bd = Infinity;
+      samples.forEach(function(sm){ var dd = (sm[1] - tx) * (sm[1] - tx) + (sm[2] - ty) * (sm[2] - ty); if (dd < bd) { bd = dd; best = sm[0]; } });
+      stopLen.push(best);
+      var card = s.firstElementChild;
+      s.style.transform = ''; cardH[i] = card.offsetHeight;
+      s.style.left = (tx - card.offsetWidth / 2) + 'px';
+      s.style.top = (ty - cardH[i] - 90) + 'px';
+    });
+
+    // scroll position -> distance along the yarn: roll, then pause at each stop
+    segs = []; var lastL = 0;
+    stopLen.forEach(function(L){ segs.push({w: TRAVEL, a: lastL, b: L, travel: true}); segs.push({w: DWELL, a: L, b: L, travel: false}); lastL = L; });
+    segs.push({w: TRAVEL * .8, a: lastL, b: len, travel: true});
+    var total = segs.reduce(function(s, g){ return s + g.w; }, 0), acc = 0;
+    segs.forEach(function(g){ g.p0 = acc / total; acc += g.w; g.p1 = acc / total; });
+    trail.style.height = (total * 85 + 100) + 'vh';
+    if (keepP !== null && keepP > 0 && keepP < 1) window.scrollTo(0, trail.offsetTop + keepP * (trail.offsetHeight - innerHeight));
+
+    // paw prints beside the yarn
+    var html = '';
+    for (var L2 = 140, n = 0; L2 < len - 80; L2 += 150, n++) {
+      var a = thread.getPointAtLength(L2), b = thread.getPointAtLength(L2 + 2), ang = Math.atan2(b.y - a.y, b.x - a.x), side = (n % 2 ? 1 : -1) * 36;
+      var px = a.x - Math.sin(ang) * side, py = a.y + Math.cos(ang) * side;
+      html += '<use href="#paw" x="' + (px - 13).toFixed(0) + '" y="' + (py - 13).toFixed(0) + '" width="26" height="26" transform="rotate(' + (ang * 57.3 + 90).toFixed(0) + ' ' + px.toFixed(0) + ' ' + py.toFixed(0) + ')"/>';
+    }
+    paws.innerHTML = html;
+    floorgrid.style.cssText = 'left:-1600px; top:-1800px; width:' + (GAP * (stops.length + 1) + 3200) + 'px; height:3600px';
+    frame();
+  }
+
+  function smooth(t){ return t * t * (3 - 2 * t); }
+  function scrollP(){
+    var h = trail.offsetHeight - innerHeight;
+    return Math.min(1, Math.max(0, (scrollY - trail.offsetTop) / h));
+  }
+  function at(p){
+    for (var i = 0; i < segs.length; i++) {
+      var g = segs[i];
+      if (p <= g.p1 || i === segs.length - 1) {
+        var u = Math.min(1, Math.max(0, (p - g.p0) / (g.p1 - g.p0)));
+        return {L: g.a + (g.b - g.a) * smooth(u), travel: g.travel ? Math.sin(Math.PI * u) : 0};
+      }
+    }
+  }
+
+  var ticking = false;
+  function frame(){
+    ticking = false;
+    if (mode !== 'trail') return;
+    if (vp.scrollTop || vp.scrollLeft) { vp.scrollTop = 0; vp.scrollLeft = 0; }   // never let the browser scroll the stage itself
+    var vw = innerWidth, vh = innerHeight, p = scrollP(), st = at(p), L = st.L, tf = st.travel;
+    var pt = thread.getPointAtLength(L), ah = thread.getPointAtLength(Math.min(len, L + 4));
+
+    // cards stand up as the ball arrives; the camera lifts so the nearest card is centred
+    var lift = vh * .1, current = -1;
+    stops.forEach(function(s, i){
+      var c = Math.max(0, 1 - Math.abs(L - stopLen[i]) / 700);
+      var fit = Math.min(1, (vh - 160) / (cardH[i] + 110));
+      s.style.transform = 'scale(' + fit.toFixed(3) + ') rotateX(' + ((1 - c) * 78).toFixed(1) + 'deg)';
+      s.style.opacity = (.35 + .65 * c).toFixed(2);
+      lift += c * ((cardH[i] * fit + 90) / 2 - vh * .1);
+      if (Math.abs(L - stopLen[i]) < 40) current = i;
+    });
+
+    // while rolling, the camera tips back to look along the floor and leans into the curve
+    var tilt = 34 * tf, rz = Math.max(-4, Math.min(4, ah.y - pt.y)) * tf, sc = 1 - .2 * tf;
+    world.style.transform = 'translate(' + (vw / 2) + 'px,' + (vh / 2 + 30) + 'px) rotateX(' + tilt.toFixed(2) + 'deg) rotateZ(' + rz.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ') translate(' + (-pt.x).toFixed(1) + 'px,' + (-pt.y + lift).toFixed(1) + 'px)';
+    thread.style.strokeDashoffset = (len - L).toFixed(1);
+
+    // the ball shrinks as it unwinds
+    var r = 1 - .45 * (L / len);
+    ballg.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ' ' + (pt.y - BALL_R * r).toFixed(1) + ') rotate(' + ((L / (BALL_R * r)) * 57.3 % 360).toFixed(1) + ') scale(' + r.toFixed(3) + ')');
+
+    progress.classList.toggle('on', p > 0 && p < 1);
+    [].forEach.call(progress.children, function(b, i){ b.setAttribute('aria-current', i === current ? 'true' : 'false'); });
+  }
+  addEventListener('scroll', function(){ if (!ticking) { ticking = true; requestAnimationFrame(frame); } }, {passive: true});
+  addEventListener('resize', function(){ clearTimeout(layout.t); layout.t = setTimeout(layout, 150); });
+
+  // stacked layout: cards tip up as they scroll into view
+  function reveal(){
+    if (mode !== 'stacked') return;
+    stops.forEach(function(s){ if (reduce || s.getBoundingClientRect().top < innerHeight * .9) s.classList.add('in'); });
+  }
+  addEventListener('scroll', reveal, {passive: true});
+
+  // ---------- going places ----------
+  function stopY(i){
+    if (mode !== 'trail') return stops[i].getBoundingClientRect().top + scrollY - 80;
+    var g = segs[i * 2 + 1];
+    return trail.offsetTop + (g.p0 + g.p1) / 2 * (trail.offsetHeight - innerHeight);
+  }
+  function scrollToY(y, instant){ window.scrollTo({top: y, behavior: instant || reduce ? 'auto' : 'smooth'}); }
+  function goStop(i){ scrollToY(stopY(i)); }
+  function target(name){
+    if (name === 'top') return 0;
+    if (name === 'contact') return document.getElementById('contact').offsetTop;
+    return stopY(name === 'about' ? 0 : 1);
+  }
+
+  var scene = document.getElementById('scene'), batting = false;
+  function bat(dest){
+    if (batting) return;
+    if (reduce || scrollY > innerHeight * .5) { scrollToY(target(dest)); return; }
+    batting = true;
+    scene.classList.add('batting');
+    setTimeout(function(){ scene.classList.add('batted'); }, 230);
+    setTimeout(function(){ scrollToY(target(dest)); batting = false; }, 850);
+  }
+  catEl.addEventListener('click', function(){ bat('projects'); });
+  catEl.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bat('projects'); } });
+  document.getElementById('ballwrap').addEventListener('click', function(){ bat('projects'); });
+  document.querySelectorAll('[data-go]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      var dest = a.dataset.go;
+      if (a.classList.contains('tagbtn')) bat(dest); else scrollToY(target(dest));
+      history.replaceState(null, '', dest === 'top' ? location.pathname : '#' + dest);
+    });
+  });
+  // the ball comes back when you scroll up to the cat
+  addEventListener('scroll', function(){ if (scrollY < 40 && !batting) scene.classList.remove('batting', 'batted'); }, {passive: true});
+
+  layout();
+  if (document.fonts) document.fonts.ready.then(layout);
+  addEventListener('load', layout);
+  // arriving from a project page (index.html#projects etc.) skips the intro
+  var h = location.hash.slice(1);
+  if (h === 'projects' || h === 'about' || h === 'contact') {
+    scene.classList.add('batted');
+    var jump = function(){ layout(); scrollToY(target(h), true); frame(); };
+    requestAnimationFrame(jump);
+    if (document.fonts) document.fonts.ready.then(jump);
+  }
 })();
 </script>
 <script src="site.js"></script>
-
 </body>
 </html>
