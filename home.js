@@ -60,7 +60,7 @@
   var trail = document.getElementById('trail'), canvas3 = document.getElementById('trail3d');
   var stops = [].slice.call(document.querySelectorAll('.stop'));
   var progress = document.getElementById('progress');
-  var LP = window.LowPoly, GAP = 15, TRAVEL = 1, DWELL = .75, R0 = .62, SEGS = 900, SIDE_GAP = 115;
+  var LP = window.LowPoly, GAP = 15, TRAVEL = 1, DWELL = .75, R0 = .62, SEGS = 900, SIDE_GAP = 115, SWAT = .14, LAG = 1.9, CAT_S = .6;
   var mode = '', T = null, len = 0, stopLen = [], stopPt = [], segs = [], cardH = [], cardW = [];
 
   stops.forEach(function(s, i){
@@ -152,6 +152,7 @@
     scatter(new THREE.IcosahedronGeometry(.12, 0), 0xF4A259, 24, .07);
 
     var ball = LP.makeYarn(1); ball.traverse(function(o){ o.castShadow = true; }); scene.add(ball);
+    var kitty = LP.makeCat(); kitty.group.scale.setScalar(CAT_S); scene.add(kitty.group);
     var camera = new THREE.PerspectiveCamera(38, 1, .1, 200);
 
     function paint(){
@@ -162,7 +163,7 @@
     paint();
     new MutationObserver(function(){ paint(); frame(); }).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
 
-    T = {renderer: renderer, scene: scene, sun: sun, curve: curve, tube: tube, ball: ball, camera: camera, lastL: 0,
+    T = {renderer: renderer, scene: scene, sun: sun, curve: curve, tube: tube, ball: ball, kitty: kitty, camera: camera, lastL: 0, t0: performance.now(),
          up: new THREE.Vector3(0, 1, 0), q: new THREE.Quaternion(), v: new THREE.Vector3()};
   }
 
@@ -199,10 +200,63 @@
       var g = segs[i];
       if (p <= g.p1 || i === segs.length - 1) {
         var u = Math.min(1, Math.max(0, (p - g.p0) / (g.p1 - g.p0)));
-        return {L: g.a + (g.b - g.a) * smooth(u), travel: g.travel ? Math.sin(Math.PI * u) : 0};
+        // each roll starts with the cat's swipe; the ball only moves once her paw connects
+        var v = g.travel ? Math.min(1, Math.max(0, (u - SWAT) / (1 - SWAT))) : 0;
+        return {L: g.a + (g.b - g.a) * smooth(v), travel: g.travel ? Math.sin(Math.PI * v) : 0, rolling: g.travel, u: u, v: v};
       }
     }
   }
+
+  // ---------- the cat chases the ball ----------
+  var catDir = new THREE.Vector3(), catPos = new THREE.Vector3();
+  function pointAt(L){
+    if (L >= 0) return T.curve.getPointAt(Math.min(1, L / len));
+    var t0 = T.curve.getTangentAt(0); return T.curve.getPointAt(0).addScaledVector(t0, L);   // before the start: keep going straight back
+  }
+  function kittyPose(st, L, ballPos){
+    var K = T.kitty.p, g = T.kitty.group, t = (performance.now() - T.t0) / 1000;
+    // she trails the ball: falls behind while it rolls, catches up by the next stop
+    var lag = LAG + (st.rolling ? 2.6 * Math.sin(Math.PI * st.v) : 0);
+    var cL = L - lag;
+    catPos.copy(pointAt(cL));
+    g.position.set(catPos.x, 0, catPos.z);
+    catDir.subVectors(ballPos, catPos); catDir.y = 0;
+    // face the ball, but turned a little toward the camera so you see her face (more so while she sits)
+    var moving0 = st.rolling ? Math.sin(Math.PI * st.v) : 0;
+    if (catDir.lengthSq() > 1e-4) {
+      var face = Math.atan2(catDir.x, catDir.z);
+      while (face > Math.PI) face -= 2 * Math.PI; while (face < -Math.PI) face += 2 * Math.PI;
+      g.rotation.y = face * (.55 + .35 * moving0);
+    }
+
+    // trotting: legs swing with distance travelled, so faster scrolling = faster steps
+    var moving = st.rolling ? Math.sin(Math.PI * st.v) : 0, ph = cL * 2.4;
+    K.legs[0].rotation.x = .75 * moving * Math.sin(ph);
+    K.legs[1].rotation.x = -.75 * moving * Math.sin(ph);
+    K.legs[1].rotation.z = 0;
+    K.feet.forEach(function(f, i){ f.position.z = .38 + .22 * moving * Math.sin(ph + (i ? 0 : Math.PI)); });
+    g.position.y = Math.abs(Math.sin(ph)) * .12 * moving;
+    K.body.rotation.x = .12 * moving;
+    K.head.rotation.set(-.1 * moving, 0, 0);
+    K.tail.forEach(function(sg, i){ sg.rotation.z = (moving ? .35 : .2) * Math.sin(t * (moving ? 5 : 2.2) - i * .55); });
+
+    // the swipe at the start of every roll: paw up and forward, then down onto the ball
+    if (st.rolling && st.u < SWAT + .03) {
+      var s = Math.min(1, st.u / SWAT), paw = K.legs[1];
+      paw.rotation.x = s < .55 ? -1.5 * (s / .55) : -1.5 + 1.5 * ((s - .55) / .45);
+      paw.rotation.z = -.25 * Math.sin(Math.PI * s);
+      K.head.rotation.x = .25 * Math.sin(Math.PI * s);
+      K.body.rotation.x = -.08 * Math.sin(Math.PI * s);
+    }
+    // sitting at a stop: little blink now and then
+    var blink = (t % 4.3) < .12 ? .12 : 1;
+    K.eyes.forEach(function(e){ e.scale.y = blink; });
+  }
+
+  // keep drawing while the trail is on screen so she can breathe and swish her tail
+  var trailOnScreen = false;
+  if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ trailOnScreen = es[0].isIntersecting; }).observe(trail);
+  (function idle(){ if (trailOnScreen && mode === 'trail' && !document.hidden) frame(); requestAnimationFrame(idle); })();
 
   var ticking = false;
   function frame(){
@@ -216,11 +270,12 @@
     if (dL) { T.v.crossVectors(T.up, tan).normalize(); T.q.setFromAxisAngle(T.v, dL / r); T.ball.quaternion.premultiply(T.q); }
     T.ball.position.set(pos.x, r, pos.z); T.ball.scale.setScalar(r / .45);
     T.tube.geometry.setDrawRange(0, Math.floor(u * SEGS) * 30);
+    kittyPose(st, L, pos);
 
     // which stop are we at, and which side does its card go?
     var near = -1, nearC = 0;
     stops.forEach(function(s, i){ var c = Math.max(0, 1 - Math.abs(L - stopLen[i]) / (GAP * .42)); if (c > nearC) { nearC = c; near = i; } });
-    var side = near % 2 ? -1 : 1, dw = smooth(nearC);
+    var side = 1, dw = smooth(nearC);
 
     // tracking shot: the camera glides along behind the ball, easing back a little while it rolls
     var tf = st.travel, cam = T.camera;
@@ -228,7 +283,7 @@
     cam.lookAt(pos.x, 1.2, pos.z);
     // slide the frame sideways so the ball and its card sit together in the middle
     var fit = near < 0 ? 1 : Math.min(1, (h - 160) / cardH[near], (w - 120) / (cardW[near] + SIDE_GAP + 140));
-    var shift = near < 0 ? 0 : side * dw * (cardW[near] * fit + SIDE_GAP) / 2;
+    var shift = near < 0 ? 0 : side * dw * ((cardW[near] * fit + SIDE_GAP) / 2 - 150);
     cam.setViewOffset(w, h, shift, 0, w, h);
     T.sun.position.set(pos.x + 5, 9, pos.z + 6); T.sun.target.position.set(pos.x, 0, pos.z);
     T.renderer.render(T.scene, cam);
@@ -238,7 +293,7 @@
     stops.forEach(function(s, i){
       var c = Math.max(0, 1 - Math.abs(L - stopLen[i]) / (GAP * .42));
       if (c <= 0) { s.style.visibility = 'hidden'; s.classList.remove('live'); return; }
-      var e = smooth(c), sd = i % 2 ? -1 : 1, f = Math.min(1, (h - 160) / cardH[i], (w - 120) / (cardW[i] + SIDE_GAP + 140));
+      var e = smooth(c), sd = 1, f = Math.min(1, (h - 160) / cardH[i], (w - 120) / (cardW[i] + SIDE_GAP + 140));
       var cx = bx + sd * (SIDE_GAP + cardW[i] * f / 2) + sd * (1 - e) * 80, cy = h / 2 + 24 + (1 - e) * 30;
       s.style.visibility = 'visible';
       s.style.opacity = e.toFixed(3);

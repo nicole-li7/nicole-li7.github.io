@@ -24,13 +24,13 @@
 
   // ---------- the cat ----------
   function makeCat(){
-    var cat = new THREE.Group(), p = {};
+    var cat = new THREE.Group(), p = {feet: []};
 
     var body = mesh(ico(1, 1), C.ginger, 0, 1.05, 0); body.scale.set(.95, 1.1, .85); cat.add(body); p.body = body;
     var belly = mesh(ico(.62, 1), C.cream, 0, .98, .5); belly.scale.set(.9, 1.15, .6); cat.add(belly);
     [-1, 1].forEach(function(s){
       var haunch = mesh(ico(.5), C.ginger, s * .62, .42, -.05); haunch.scale.set(.8, .9, 1.1); cat.add(haunch);
-      var foot = mesh(ico(.22), C.cream, s * .74, .1, .38); foot.scale.set(1, .6, 1.3); cat.add(foot);
+      var foot = mesh(ico(.22), C.cream, s * .74, .1, .38); foot.scale.set(1, .6, 1.3); cat.add(foot); p.feet.push(foot);
       var stripe = mesh(new THREE.BoxGeometry(.07, .5, .3), C.stripe, s * .9, 1.15, .05); stripe.rotation.z = s * .25; cat.add(stripe);
     });
 
@@ -95,7 +95,7 @@
   }
 
   // shared with the yarn trail on the home page
-  window.LowPoly = {lin: lin, mat: mat, mesh: mesh, ico: ico, makeYarn: makeYarn};
+  window.LowPoly = {lin: lin, mat: mat, mesh: mesh, ico: ico, makeYarn: makeYarn, makeCat: makeCat};
 
   // ---------- one scene per canvas ----------
   function stage(canvas, opts){
