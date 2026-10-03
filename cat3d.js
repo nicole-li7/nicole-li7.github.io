@@ -94,6 +94,9 @@
     return g;
   }
 
+  // shared with the yarn trail on the home page
+  window.LowPoly = {lin: lin, mat: mat, mesh: mesh, ico: ico, makeYarn: makeYarn};
+
   // ---------- one scene per canvas ----------
   function stage(canvas, opts){
     var renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, alpha: true});
