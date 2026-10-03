@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,231 +8,277 @@
 <meta property="og:description" content="CS student at UBC who makes small, polished apps for real life.">
 <meta property="og:image" content="matcha.jpg">
 <link rel="icon" href="figures/idea.png">
-<title>Nicole's Sticker Book</title>
+<title>Nicole's Makeup Bag</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap">
 <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+<style>
+:root{
+  --bg:#FCF5F2; --bg2:#F6E6E2; --ink:#3B2A2C; --ink-soft:#7B6466; --paper:#FFFFFF; --line:#3B2A2C;
+  --mint:#F4AFC0; --mint-d:#C9577A; --mint-l:#FBE1E8; --gold:#D9A68C; --cream:#F6EBDD; --berry:#8E2337;
+  --table:#F7EEEA; --shadow:0 10px 30px rgba(59,42,44,.14), 0 2px 0 rgba(59,42,44,.9);
+}
+:root[data-theme="dark"]{
+  --bg:#1A1518; --bg2:#261E22; --ink:#F6EAE6; --ink-soft:#C7B3B2; --paper:#2A2126; --line:#F6EAE6;
+  --mint:#F4AFC0; --mint-d:#F08AAA; --mint-l:#4A2A35; --gold:#E3B79E; --cream:#3E3135; --berry:#D9667F;
+  --table:#2C2328; --shadow:0 10px 30px rgba(0,0,0,.45), 0 2px 0 rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:"Nunito",system-ui,sans-serif; font-size:16.5px; line-height:1.6; overflow-x:hidden}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif; line-height:1.08; margin:0; font-weight:700; letter-spacing:-.01em}
+a{color:inherit}
+img{max-width:100%} [hidden]{display:none!important}
+button{font:inherit; color:inherit}
+
+/* top bar */
+.bar{position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:40; display:flex; align-items:center; gap:2px; padding:5px; background:var(--paper); border:2px solid var(--line); border-radius:999px; box-shadow:0 3px 0 var(--line); white-space:nowrap}
+.bar a,.bar button{display:block; border:0; background:none; cursor:pointer; text-decoration:none; font:700 15px "Nunito",sans-serif; padding:5px 13px; border-radius:999px}
+.bar a:hover,.bar button:hover,.bar a:focus-visible,.bar button:focus-visible{background:var(--mint-l); outline:none}
+.bar .me{font-family:"Fraunces",serif; font-style:italic}
+
+.btn{display:inline-block; font:800 15.5px "Nunito",sans-serif; text-decoration:none; padding:10px 20px; border:2px solid var(--line); border-radius:999px; background:var(--mint); color:#3B1A24; cursor:pointer; box-shadow:0 4px 0 var(--line); transition:transform .15s, box-shadow .15s}
+.btn.alt{background:var(--paper); color:var(--ink)}
+.btn:hover{transform:translateY(2px); box-shadow:0 2px 0 var(--line)}
+.btn:active{transform:translateY(4px); box-shadow:0 0 0 var(--line)}
+.btn:focus-visible,.lab:focus-visible{outline:3px dashed var(--mint-d); outline-offset:4px}
+.btn.small{font-size:13.5px; padding:6px 14px; box-shadow:0 3px 0 var(--line)}
+
+/* ---------- the vanity (3D stage) ---------- */
+.vanity{position:relative; height:100vh; height:100svh; min-height:560px; overflow:hidden}
+#bag3d{position:absolute; inset:0; width:100%; height:100%; display:block}
+#bag3d.point{cursor:pointer}
+.hero{position:absolute; left:max(24px, calc(50% - 540px)); top:50%; transform:translateY(-50%); width:min(500px, 46vw); z-index:5; transition:opacity .5s, transform .6s cubic-bezier(.65,0,.35,1)}
+.eyebrow{display:inline-block; font:800 12.5px "Nunito",sans-serif; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft)}
+.hero h1{font-size:clamp(46px,6.2vw,80px); margin-top:8px}
+.hero h1 em{font-style:italic; color:var(--mint-d)}
+.role{font:600 clamp(19px,2.3vw,23px) "Nunito",sans-serif; color:var(--ink-soft); margin:12px 0 0; min-height:1.5em}
+.role .typed{color:var(--ink); border-right:3px solid var(--mint); padding-right:3px; animation:caret .8s step-end infinite}
+@keyframes caret{50%{border-color:transparent}}
+.lead{margin:14px 0 22px}
+.btns{display:flex; flex-wrap:wrap; gap:10px}
+.hint{font-size:14px; color:var(--ink-soft); margin-top:16px; font-style:italic}
+.opened .hero{opacity:0; pointer-events:none; transform:translateY(-60%)}
+
+/* product labels (also the keyboard way in) */
+.labels{position:absolute; inset:0; pointer-events:none; z-index:6}
+.lab{position:absolute; left:0; top:0; font:800 13px "Nunito",sans-serif; background:var(--paper); border:2px solid var(--line); border-radius:999px; padding:3px 11px; cursor:pointer; white-space:nowrap; opacity:0; transition:opacity .35s, background .2s; box-shadow:0 2px 0 var(--line)}
+.lab small{display:block; font-weight:600; font-size:10.5px; color:var(--ink-soft); text-align:center; margin-top:-2px}
+.lab:hover,.lab.hot{background:var(--mint-l)}
+.lab{pointer-events:none}
+.overview .lab{opacity:1; pointer-events:auto}
+
+.overlay-ui{position:absolute; right:24px; bottom:22px; z-index:7; display:flex; gap:10px; align-items:center; opacity:0; pointer-events:none; transition:opacity .4s}
+.overview .overlay-ui{opacity:1; pointer-events:auto}
+.overlay-ui span{font-size:14px; color:var(--ink-soft); font-style:italic; background:var(--bg); padding:2px 10px; border-radius:999px}
+
+/* buttons under whatever is open */
+.actions{position:absolute; left:50%; bottom:20px; transform:translate(-50%,20px); z-index:8; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; max-width:calc(100% - 40px); opacity:0; pointer-events:none; transition:opacity .35s, transform .45s cubic-bezier(.34,1.3,.64,1)}
+.focused .actions,.mirroring .actions{opacity:1; pointer-events:auto; transform:translate(-50%,0)}
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+/* in 3D the intro lives on the mirror, so the overlay only says hello */
+.is3d .hero .role,.is3d .hero .lead,.is3d .hero .btns .alt{display:none}
+.is3d .hero{width:min(520px, 44vw)}
+.is3d .hero h1{font-size:clamp(44px,5.2vw,72px); white-space:nowrap}
+.mirroring .hero{opacity:0; pointer-events:none; transform:translateY(-60%)}
+.mirroring .overlay-ui,.focused .overlay-ui{opacity:0; pointer-events:none}
+.card{background:var(--paper); border:2px solid var(--line); border-radius:22px; padding:22px 24px; box-shadow:var(--shadow)}
+.kicker{font:800 12px "Nunito",sans-serif; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-soft)}
+.card h2{font-size:34px; margin:4px 0 10px}
+.card h3{font-size:30px; margin:4px 0 8px}
+.card p{margin:0 0 10px; font-size:15px}
+.card .muted{color:var(--ink-soft)}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px}
+.chips span{font:800 12px "Nunito",sans-serif; padding:3px 11px; border-radius:999px; border:1.5px solid var(--line); background:var(--mint-l)}
+.row2{display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center}
+.ghost{font:800 14px "Nunito",sans-serif; text-decoration:none; border-bottom:2px solid var(--mint)}
+.ghost:hover{border-bottom-width:4px}
+.ghost:focus-visible{outline:3px dashed var(--mint-d); outline-offset:3px}
+.about ul{list-style:none; padding:0; margin:6px 0 12px; display:grid; gap:5px; font-size:14.5px; line-height:1.5}
+.about li{display:flex; gap:8px}
+.about li::before{content:"✦"; color:var(--mint-d); font-weight:800}
+.pols{display:flex; gap:14px; justify-content:center; padding:6px 0 4px}
+.pol{background:var(--paper); border:2px solid var(--line); padding:7px 7px 24px; width:140px; margin:0; position:relative; box-shadow:0 3px 0 var(--line)}
+.pol:nth-child(1){transform:rotate(-5deg)} .pol:nth-child(2){transform:rotate(4deg)}
+.pol img{display:block; aspect-ratio:1; object-fit:cover; width:100%; border:1.5px solid var(--line)}
+.pol figcaption{position:absolute; bottom:2px; left:0; right:0; text-align:center; font:italic 600 13px "Fraunces",serif; color:var(--ink-soft)}
+.skills .chips span{font-size:13.5px; padding:5px 13px; background:var(--paper)}
+.skills .chips span:nth-child(3n+1){background:var(--mint-l)} .skills .chips span:nth-child(3n+2){background:var(--cream)}
+.contactcard .row2{margin-top:6px}
+
+/* ---------- contact + footer ---------- */
+.contact{text-align:center; padding:90px 24px 50px}
+.contact h2{font-size:clamp(36px,6vw,60px)}
+.contact h2 em{font-style:italic; color:var(--mint-d)}
+.contact p{max-width:46ch; margin:12px auto 24px; color:var(--ink-soft)}
+.contact .row2{justify-content:center}
+footer{text-align:center; font-size:14px; color:var(--ink-soft); padding:6px 0 34px}
+
+/* resume dialog */
+.resume-dlg{border:2px solid var(--line); border-radius:22px; padding:0; background:var(--paper); color:var(--ink); width:min(94vw,820px); max-height:92vh; box-shadow:var(--shadow); overflow:hidden}
+.resume-dlg::backdrop{background:rgba(46,42,38,.5); backdrop-filter:blur(3px)}
+.resume-dlg[open]{display:flex; flex-direction:column; animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.9); opacity:0}to{transform:scale(1); opacity:1}}
+.resume-bar{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 14px; border-bottom:2px solid var(--line); background:var(--mint-l); font:800 15px "Nunito",sans-serif}
+.resume-dlg .scroll{overflow:auto} .resume-dlg img{display:block; width:100%; background:#fff}
+
+#sparkles{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:50}
+
+/* ---------- flat layout: phones, no WebGL, reduced motion ---------- */
+.cards-flat{display:none}
+.flat .vanity{height:auto; min-height:0; overflow:visible; padding:96px 20px 20px}
+.flat #bag3d,.flat .labels,.flat .overlay-ui,.flat .actions{display:none}
+.flat .hero{position:static; transform:none; width:auto; max-width:620px; margin:0 auto}
+.flat .cards-flat{display:grid; gap:26px; max-width:620px; margin:20px auto 0; padding:0 20px}
+
+@media (max-width:760px){
+  .bar a,.bar button{padding:5px 8px; font-size:14px}
+  .card{padding:18px 16px}
+  .pol{width:120px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+  #sparkles{display:none}
+}
+</style>
 </head>
-<body>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="p-approve" viewBox="0 0 148 247"><image href="figures/approve.png" width="148" height="247"/></symbol>
-  <symbol id="p-research" viewBox="0 0 162 238"><image href="figures/research.png" width="162" height="238"/></symbol>
-  <symbol id="p-present" viewBox="0 0 165 276"><image href="figures/present.png" width="165" height="276"/></symbol>
-  <symbol id="p-idea" viewBox="0 0 127 259"><image href="figures/idea.png" width="127" height="259"/></symbol>
-  <symbol id="p-road" viewBox="0 0 235 246"><image href="figures/road.png" width="235" height="246"/></symbol>
-  <symbol id="p-bubbles" viewBox="0 0 254 277"><image href="figures/bubbles.png" width="254" height="277"/></symbol>
-  <symbol id="p-plane" viewBox="0 0 204 268"><image href="figures/plane.png" width="204" height="268"/></symbol>
-  <symbol id="p-sunbath" viewBox="0 0 254 163"><image href="figures/sunbath.png" width="254" height="163"/></symbol>
-  <symbol id="p-sing" viewBox="0 0 148 279"><image href="figures/sing.png" width="148" height="279"/></symbol>
-  <symbol id="p-skate" viewBox="0 0 178 280"><image href="figures/skate.png" width="178" height="280"/></symbol>
-  <symbol id="p-garden" viewBox="0 0 178 238"><image href="figures/garden.png" width="178" height="238"/></symbol>
-  <symbol id="p-walk" viewBox="0 0 220 262"><image href="figures/walk.png" width="220" height="262"/></symbol>
-  <symbol id="p-group" viewBox="0 0 241 169"><image href="figures/group.png" width="241" height="169"/></symbol>
-</svg>
-
-<div class="floaters" aria-hidden="true">
-  <span class="s1" style="left:5%;top:16%;background:var(--g3);animation-delay:-2s"></span>
-  <span class="s2" style="left:12%;top:72%;background:var(--g4);animation-delay:-5s;width:40px;height:40px"></span>
-  <span class="s3" style="left:86%;top:10%;background:var(--g2);animation-delay:-1s;width:80px;height:80px"></span>
-  <span class="s1" style="left:90%;top:62%;background:var(--g3);animation-delay:-8s;width:50px;height:50px"></span>
-  <span class="s2" style="left:46%;top:88%;background:var(--g4);animation-delay:-3s;width:36px;height:36px"></span>
-  <span class="s3" style="left:68%;top:42%;background:var(--g2);animation-delay:-6s;width:44px;height:44px"></span>
-</div>
+<body class="closed">
 <canvas id="sparkles" aria-hidden="true"></canvas>
-<div class="smk corner" title="hi" aria-hidden="true"><svg viewBox="0 0 254 163"><use href="#p-sunbath"/></svg></div>
 
-<nav class="nav" aria-label="Sections">
-  <ul>
-    <li><a href="#projects">projects</a></li>
-    <li><a href="#about">about</a></li>
-    <li><a href="#contact">say hi</a></li>
-    <li><button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button></li>
-  </ul>
+<nav class="bar" aria-label="Sections">
+  <a class="me" href="#top" data-go="top">nicole</a>
+  <a href="#about" data-go="about">about</a>
+  <a href="#projects" data-go="projects">projects</a>
+  <button type="button" class="resume-btn">resume</button>
+  <a href="#contact" data-go="contact">say hi</a>
+  <button class="theme" id="themeBtn" type="button" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
-<main class="wrap">
-  <section class="hero">
-    <div>
+<main>
+  <section class="vanity" id="top">
+    <canvas id="bag3d" aria-hidden="true"></canvas>
+    <div class="hero">
       <span class="eyebrow">UBC computer science · vancouver</span>
-      <h1>hi, i'm <span class="squiggle">Nicole</span> <span class="wave">👋</span></h1>
+      <h1>hi, i'm <em>Nicole</em> 👋</h1>
       <p class="role">i make <span class="typed" id="typed">things i wish existed</span></p>
       <p class="lead">Computer science student at the University of British Columbia who likes shipping small, polished apps for real life. An all-in-one iOS planner, search algorithms written from scratch in C++, and a privacy-first period tracker so far. Looking for a summer 2027 internship.</p>
       <div class="btns">
-        <a class="btn" href="#projects">see my stuff ✨</a>
+        <button class="btn" type="button" data-go="open">open my bag ✨</button>
+        <button class="btn alt" type="button" data-go="about">about me</button>
         <button class="btn alt resume-btn" type="button">resume</button>
         <a class="btn alt" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
       </div>
+      <p class="hint">psst, everything I've made is in my makeup bag. Click it to unzip.</p>
     </div>
-    <div>
-      <div class="stage" id="stage" role="img" aria-label="A little green figure researching on a laptop. Click for a good idea." tabindex="0">
-        <div class="pad a"></div>
-        <div class="smk hero-smk"><svg viewBox="0 0 162 238"><use href="#p-research"/></svg></div>
-        <div class="smk idea"><svg viewBox="0 0 40 40"><circle class="bulb" cx="20" cy="16" r="12"/><rect class="prop" x="14" y="27" width="12" height="7" rx="2"/><path d="M6 6 l-3 -3 M34 6 l3 -3 M20 -2 v-3" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div class="smk buddy"><svg viewBox="0 0 254 277"><use href="#p-bubbles"/></svg></div>
-      </div>
-    </div>
+    <div class="labels" id="labels"></div>
+    <div class="overlay-ui"><span>pick something to open it</span><button class="btn alt small" type="button" id="zipUp">zip it back up</button></div>
+    <div class="actions" id="actions" aria-label="What's open"></div>
+    <div class="sr-only" id="readout" aria-live="polite"></div>
   </section>
 
-  <section id="projects">
-    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div><h2>things i've made</h2></div>
-    <div class="grid">
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:66%"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div></div>
-        <div class="smk edge" aria-hidden="true"><svg viewBox="0 0 204 268"><use href="#p-plane"/></svg></div>
-        <div class="art a1"><div class="check"><div><i></i>budget: on track</div><div><i></i>CPSC lecture 2pm</div><div><i></i>finish problem set</div></div></div>
-        <h3><a class="open" href="projects/lifetracker.html">LifeTracker</a></h3>
-        <p>My own Notion. An all-in-one iOS planner that pulls budgeting, calendar, to-do lists, class schedules, and notes into one interface, built from interconnected SwiftUI modules over shared data models. I use it every day.</p>
-        <div class="tags"><span>Swift</span><span>SwiftUI</span><span>iOS</span></div>
-        <div class="links2"><a class="go" href="projects/lifetracker.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/LifeTracker" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
+  <!-- every product's card: shown one at a time in the panel, or all stacked on small screens -->
+  <div class="cards-flat" id="cards">
+    <article class="card about" data-item="about" id="about">
+      <span class="kicker">the compact · about</span>
+      <h2>a little about me</h2>
+      <p>I'm studying computer science at the University of British Columbia in Vancouver, class of 2029. I learn best by building things I'd actually use. Most of my projects started as "why isn't there a nice app for this?" and turned into one.</p>
+      <ul>
+        <li>Placed 3rd overall at the UBC Amazon Robotics Hackathon.</li>
+        <li>Provincial junior badminton champion. I also coached camps of 25+ kids at Shuttlesport Badminton Academy.</li>
+        <li>Led my high school physics club and coached our team at the UBC Physics Olympics.</li>
+        <li>Coursework so far: data structures &amp; algorithms, computer systems, software construction, discrete math, linear algebra.</li>
+        <li>Collector of Smiskis that hide in corners.</li>
+      </ul>
+      <div class="pols">
+        <figure class="pol"><img src="arena.jpg" alt="Nicole at a concert in an arena"><figcaption>concert night</figcaption></figure>
+        <figure class="pol"><img src="matcha.jpg" alt="Nicole sipping a matcha latte on a bench"><figcaption>matcha break</figcaption></figure>
       </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:64%"><svg viewBox="0 0 148 247"><use href="#p-approve"/></svg></div></div>
-        <div class="art a2"><div class="rank"><div><b>98</b><i></i><em>NEW</em></div><div><b>91</b><i></i></div><div><b>84</b><i></i><em>NEW</em></div></div></div>
-        <h3><a class="open" href="projects/internscout.html">InternScout</a></h3>
-        <p>A Mac app that pulls about 13,000 live internship postings from 1,700 companies and ranks every one against my profile, so the best matches are always at the top. It tells me what's new since I last checked.</p>
-        <div class="tags"><span>C++17</span><span>Dear ImGui</span><span>libcurl</span><span>multithreading</span></div>
-        <div class="links2"><a class="go" href="projects/internscout.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/internscout" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
-      </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:62%"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div></div>
-        <div class="smk hang" aria-hidden="true"><svg viewBox="0 0 235 246"><use href="#p-road"/></svg></div>
-        <div class="art a3"><div class="pg">
-          <i class="s p" style="--d:0"></i><i class="p" style="--d:1"></i><i class="p" style="--d:2"></i><i class="w"></i><i></i><i></i><i></i>
-          <i></i><i class="w"></i><i class="p" style="--d:3"></i><i class="w"></i><i></i><i class="w"></i><i></i>
-          <i></i><i></i><i class="p" style="--d:4"></i><i class="p" style="--d:5"></i><i class="p" style="--d:6"></i><i class="w"></i><i></i>
-          <i></i><i class="w"></i><i></i><i class="w"></i><i class="p" style="--d:7"></i><i class="p" style="--d:8"></i><i class="g"></i>
-        </div></div>
-        <h3><a class="open" href="projects/search.html">Search Algorithm Explorer</a></h3>
-        <p>A* pathfinding and Minimax adversarial search, implemented from scratch in C++ with full game-tree traversal, to study how heuristics trade accuracy for speed in game AI.</p>
-        <div class="tags"><span>C++</span><span>A*</span><span>Minimax</span><span>game AI</span></div>
-        <div class="links2"><a class="go" href="projects/search.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/astar" target="_blank" rel="noopener">A* repo <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/minimax" target="_blank" rel="noopener">Minimax repo <span class="ar">→</span></a></div>
-      </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:8%"><svg viewBox="0 0 241 169"><use href="#p-group"/></svg></div></div>
-        <div class="art a4"><div class="cal"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="lock">🔒 offline</span></div>
-        <h3><a class="open" href="projects/cycle.html">Cycle</a></h3>
-        <p>A fully offline period tracker for macOS in C++20 with SDL2. Health data never leaves your machine, because it shouldn't have to.</p>
-        <div class="tags"><span>C++20</span><span>SDL2</span><span>CMake</span><span>privacy</span></div>
-        <div class="links2"><a class="go" href="projects/cycle.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/cycle" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
-      </div>
-      <div class="sticker">
-        <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:66%"><svg viewBox="0 0 220 262"><use href="#p-walk"/></svg></div></div>
-        <div class="art a5"><div class="lanes"><i></i><i></i><i></i><b class="bot r1"></b><b class="bot r2"></b><b class="bot r3"></b><span class="dock d1"></span><span class="dock d2"></span></div></div>
-        <h3><a class="open" href="projects/robots.html">Robot Router</a></h3>
-        <p>Our team's entry for the Amazon Robotics Hackathon 2026. It routes warehouse robots through one-lane aisles by booking the floor ahead in space and time, testing every plan on an exact copy of the game, and keeping the best. 84 points to the example driver's 59.</p>
-        <div class="tags"><span>Python</span><span>space-time A*</span><span>planning</span><span>hackathon</span></div>
-        <div class="links2"><a class="go" href="projects/robots.html">demo &amp; details <span class="ar">→</span></a><a class="go" href="https://github.com/nicole-li7/ArHackathon2026" target="_blank" rel="noopener">github <span class="ar">→</span></a></div>
-      </div>
-    </div>
-  </section>
+    </article>
 
-  <section aria-label="Skills" class="skills">
-    <div class="smk skater" aria-hidden="true"><svg viewBox="0 0 178 280"><use href="#p-skate"/></svg></div>
-    <div class="marquee">
-      <div class="track" id="track">
-        <span class="chip">C++</span><span class="chip">Swift</span><span class="chip">Java</span><span class="chip">Python</span>
-        <span class="chip">JavaScript</span><span class="chip">HTML / CSS</span><span class="chip">SwiftUI</span><span class="chip">Git / GitHub</span>
-        <span class="chip">Xcode</span><span class="chip">VS Code</span><span class="chip">A* search</span><span class="chip">Minimax</span>
-        <span class="chip">data structures</span><span class="chip">OOP design</span><span class="chip">API integration</span><span class="chip">SDL2 / CMake</span>
-      </div>
-    </div>
-  </section>
+    <article class="card" data-item="lifetracker" id="projects">
+      <span class="kicker">the lipstick · project</span>
+      <h3>LifeTracker</h3>
+      <p class="muted">My own Notion. An all-in-one iOS planner that pulls budgeting, calendar, to-do lists, class schedules, and notes into one interface, built from interconnected SwiftUI modules over shared data models. I use it every day.</p>
+      <div class="chips"><span>Swift</span><span>SwiftUI</span><span>iOS</span></div>
+      <div class="row2"><a class="btn small" href="projects/lifetracker.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/LifeTracker" target="_blank" rel="noopener">github</a></div>
+    </article>
 
-  <section id="about">
-    <div class="title"><div class="smk" aria-hidden="true"><svg viewBox="0 0 178 238"><use href="#p-garden"/></svg></div><h2>a little about me</h2></div>
-    <div class="about">
-      <div>
-        <p>I'm studying computer science at the University of British Columbia in Vancouver, class of 2029. I learn best by building things I'd actually use. Most of my projects started as "why isn't there a nice app for this?" and turned into one.</p>
-        <ul>
-          <li>Placed 3rd overall at the UBC Amazon Robotics Hackathon.</li>
-          <li>Provincial junior badminton champion. I also coached camps of 25+ kids at Shuttlesport Badminton Academy.</li>
-          <li>Led my high school physics club and coached our team at the UBC Physics Olympics.</li>
-          <li>Coursework so far: data structures &amp; algorithms, computer systems, software construction, discrete math, linear algebra.</li>
-          <li>Collector of Smiskis that hide in corners.</li>
-        </ul>
-      </div>
-      <div class="aside">
-        <div class="pad b"></div>
-        <div class="smk thinker" aria-hidden="true"><svg viewBox="0 0 127 259"><use href="#p-idea"/></svg></div>
-        <div class="fan">
-          <figure class="polaroid p1">
-            <div class="photo"><img src="arena.jpg" alt="Nicole at a concert in an arena"></div>
-            <figcaption>concert night</figcaption>
-          </figure>
-          <figure class="polaroid p2">
-            <div class="peekwrap" aria-hidden="true"><div class="smk" style="left:10%"><svg viewBox="0 0 148 279"><use href="#p-sing"/></svg></div></div>
-            <div class="photo"><img src="matcha.jpg" alt="Nicole sipping a matcha latte on a bench"></div>
-            <figcaption>matcha break</figcaption>
-          </figure>
-        </div>
-      </div>
-    </div>
-  </section>
+    <article class="card" data-item="internscout">
+      <span class="kicker">the nail polish · project</span>
+      <h3>InternScout</h3>
+      <p class="muted">A Mac app that pulls about 13,000 live internship postings from 1,700 companies and ranks every one against my profile, so the best matches are always at the top. It tells me what's new since I last checked.</p>
+      <div class="chips"><span>C++17</span><span>Dear ImGui</span><span>libcurl</span><span>multithreading</span></div>
+      <div class="row2"><a class="btn small" href="projects/internscout.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/internscout" target="_blank" rel="noopener">github</a></div>
+    </article>
 
-  <section id="contact" class="contact">
-    <h2>let's build something cute 🌱</h2>
+    <article class="card" data-item="search">
+      <span class="kicker">the mascara · project</span>
+      <h3>Search Algorithm Explorer</h3>
+      <p class="muted">A* pathfinding and Minimax adversarial search, implemented from scratch in C++ with full game-tree traversal, to study how heuristics trade accuracy for speed in game AI.</p>
+      <div class="chips"><span>C++</span><span>A*</span><span>Minimax</span><span>game AI</span></div>
+      <div class="row2"><a class="btn small" href="projects/search.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/astar" target="_blank" rel="noopener">A* repo</a><a class="ghost" href="https://github.com/nicole-li7/minimax" target="_blank" rel="noopener">Minimax repo</a></div>
+    </article>
+
+    <article class="card" data-item="cycle">
+      <span class="kicker">the lip gloss · project</span>
+      <h3>Cycle</h3>
+      <p class="muted">A fully offline period tracker for macOS in C++20 with SDL2. Health data never leaves your machine, because it shouldn't have to.</p>
+      <div class="chips"><span>C++20</span><span>SDL2</span><span>CMake</span><span>privacy</span></div>
+      <div class="row2"><a class="btn small" href="projects/cycle.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/cycle" target="_blank" rel="noopener">github</a></div>
+    </article>
+
+    <article class="card" data-item="robots">
+      <span class="kicker">the brush · project</span>
+      <h3>Robot Router</h3>
+      <p class="muted">Our team's entry for the Amazon Robotics Hackathon 2026. It routes warehouse robots through one-lane aisles by booking the floor ahead in space and time, testing every plan on an exact copy of the game, and keeping the best. 84 points to the example driver's 59.</p>
+      <div class="chips"><span>Python</span><span>space-time A*</span><span>planning</span><span>hackathon</span></div>
+      <div class="row2"><a class="btn small" href="projects/robots.html">demo &amp; details →</a><a class="ghost" href="https://github.com/nicole-li7/ArHackathon2026" target="_blank" rel="noopener">github</a></div>
+    </article>
+
+    <article class="card skills" data-item="skills">
+      <span class="kicker">the palette · skills</span>
+      <h3>every shade I've got</h3>
+      <div class="chips">
+        <span>C++</span><span>Swift</span><span>Java</span><span>Python</span><span>JavaScript</span><span>HTML / CSS</span><span>SwiftUI</span><span>Git / GitHub</span>
+        <span>Xcode</span><span>VS Code</span><span>A* search</span><span>Minimax</span><span>data structures</span><span>OOP design</span><span>API integration</span><span>SDL2 / CMake</span>
+      </div>
+    </article>
+
+    <article class="card contactcard" data-item="contact">
+      <span class="kicker">the perfume · say hi</span>
+      <h3>let's build something cute 🌱</h3>
+      <p class="muted">Open to internships, collabs, and chatting about apps. My inbox is friendly: <a href="mailto:nicole.li.2025@gmail.com">nicole.li.2025@gmail.com</a>, or <a href="mailto:nli28@student.ubc.ca">nli28@student.ubc.ca</a> for anything UBC.</p>
+      <div class="row2">
+        <a class="btn small" href="mailto:nicole.li.2025@gmail.com">email me</a>
+        <a class="ghost" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
+        <a class="ghost" href="https://www.linkedin.com/in/nicole-l-445ab8330" target="_blank" rel="noopener">linkedin</a>
+        <button class="btn alt small resume-btn" type="button">resume</button>
+      </div>
+    </article>
+  </div>
+
+  <section class="contact" id="contact">
+    <h2>let's build something <em>cute</em> 🌱</h2>
     <p>Open to internships, collabs, and chatting about apps. My inbox is friendly: <a href="mailto:nicole.li.2025@gmail.com">nicole.li.2025@gmail.com</a>, or <a href="mailto:nli28@student.ubc.ca">nli28@student.ubc.ca</a> for anything UBC.</p>
-    <div class="links">
-      <a class="btn big" href="mailto:nicole.li.2025@gmail.com">email me</a>
+    <div class="row2">
+      <a class="btn" href="mailto:nicole.li.2025@gmail.com">email me</a>
       <a class="btn alt" href="https://github.com/nicole-li7" target="_blank" rel="noopener">github</a>
       <a class="btn alt" href="https://www.linkedin.com/in/nicole-l-445ab8330" target="_blank" rel="noopener">linkedin</a>
       <button class="btn alt resume-btn" type="button">resume</button>
     </div>
-    <div class="crowd" aria-hidden="true">
-      <div class="pad c"></div>
-      <div class="smk walk"><svg viewBox="0 0 235 246"><use href="#p-road"/></svg></div>
-      <div class="smk"><svg viewBox="0 0 165 276"><use href="#p-present"/></svg></div>
-      <div class="smk"><svg viewBox="0 0 148 279"><use href="#p-sing"/></svg></div>
-      <div class="smk" style="width:130px"><svg viewBox="0 0 241 169"><use href="#p-group"/></svg></div>
-      <div class="smk walk2"><svg viewBox="0 0 220 262"><use href="#p-walk"/></svg></div>
-    </div>
   </section>
 </main>
+
 <dialog id="resumeDlg" class="resume-dlg" aria-label="Resume">
   <div class="resume-bar">
     <span>Nicole Li · resume</span>
-    <span class="resume-actions"><a class="btn alt small" href="Nicole_Li_Resume.pdf" download="Nicole_Li_Resume.pdf">download pdf</a><button class="btn small" type="button" id="resumeClose">close ✕</button></span>
+    <span class="row2"><a class="btn alt small" href="Nicole_Li_Resume.pdf" download="Nicole_Li_Resume.pdf">download pdf</a><button class="btn small" type="button" id="resumeClose">close ✕</button></span>
   </div>
   <div class="scroll"><img src="resume.jpg" alt="Nicole Li's resume: UBC computer science, projects, skills, and activities"></div>
 </dialog>
-<footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
+<footer>made with ♥ and a very full makeup bag · © 2026 Nicole Li</footer>
 
-<script>
-(function(){
-  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // typed roles
-  var roles = ['things i wish existed', 'things that make life easier'];
-  var el = document.getElementById('typed'), ri = 0, ci = roles[0].length, del = false;
-  function tick(){
-    var word = roles[ri];
-    if(!del){ ci++; if(ci > word.length){ del = true; return setTimeout(tick, 1600); } }
-    else { ci--; if(ci < 0){ del = false; ri = (ri+1) % roles.length; ci = 0; } }
-    el.textContent = roles[ri].slice(0, Math.max(ci,0));
-    setTimeout(tick, del ? 45 : 90);
-  }
-  if(!reduce) setTimeout(tick, 1600);
-
-  // hero: click for a good idea
-  var st = document.getElementById('stage');
-  function idea(){ st.classList.remove('hi'); void st.offsetWidth; st.classList.add('hi'); }
-  st.addEventListener('click', idea);
-  st.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); idea(); } });
-
-  // resume viewer
-  var dlg = document.getElementById('resumeDlg');
-  document.querySelectorAll('.resume-btn').forEach(function(b){ b.addEventListener('click', function(){ dlg.showModal(); }); });
-  document.getElementById('resumeClose').addEventListener('click', function(){ dlg.close(); });
-  dlg.addEventListener('click', function(e){ if(e.target === dlg) dlg.close(); });
-
-  // marquee duplicate for seamless loop
-  var track = document.getElementById('track'); track.innerHTML += track.innerHTML;
-
-})();
-</script>
-<script src="site.js"></script>
-
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script defer src="makeup.js"></script>
+<script defer src="site.js"></script>
 </body>
 </html>
