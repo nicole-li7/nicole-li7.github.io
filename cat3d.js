@@ -8,8 +8,10 @@
 
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var root = document.documentElement;
-  var C = {ginger: 0xF4A259, stripe: 0xD9803B, cream: 0xFFE8C7, inner: 0xFFC9A0, eye: 0x2B1D14, nose: 0xC8624A,
-           collar: 0x4E9A35, bell: 0xFFE97A, yarn: 0x7CC35A, yarnD: 0x4E9A35, white: 0xFFFFFF};
+  // colours taken from photos of Nicole's cat: pale apricot coat, creamy chest, yellow-green eyes,
+  // pink nose and ears, a white chest spot, black collar with a pink tag
+  var C = {ginger: 0xE7A462, stripe: 0xCF8A4E, cream: 0xF7DAB2, inner: 0xF2ABA2, eye: 0x1E1612, iris: 0xC4B44A, nose: 0xE8907E,
+           collar: 0x2A2228, tag: 0xF2A7C3, white: 0xFFFDF8, yarn: 0x7CC35A, yarnD: 0x4E9A35};
 
   // colours are picked in sRGB; the renderer works in linear light, so convert them
   function lin(c){ var col = new THREE.Color(c); return col.convertSRGBToLinear ? col.convertSRGBToLinear() : col; }
@@ -49,8 +51,9 @@
       var inner = mesh(new THREE.ConeGeometry(.17, .36, 4), C.inner, 0, .14, .12); inner.rotation.y = Math.PI / 4; ear.add(inner);
       if (s === 1) p.ear = ear;
       var eye = new THREE.Group(); eye.position.set(s * .3, .05, .7); head.add(eye);
-      var ball = mesh(ico(.11), C.eye); ball.scale.set(1, 1.35, .6); eye.add(ball);
-      var shine = mesh(ico(.035), C.white, .03, .05, .06); eye.add(shine);
+      var iris = mesh(ico(.13), C.iris); iris.scale.set(1, 1.12, .55); eye.add(iris);
+      var pupil = mesh(ico(.075), C.eye, 0, 0, .05); pupil.scale.set(.75, 1.2, .5); eye.add(pupil);
+      var shine = mesh(ico(.03), C.white, .035, .05, .1); eye.add(shine);
       p.eyes.push(eye);
     });
     var wl = [];
@@ -59,8 +62,9 @@
     head.add(new THREE.LineSegments(wg, new THREE.LineBasicMaterial({color: lin(0x3A2A20)})));
 
     // collar
-    var collar = mesh(new THREE.TorusGeometry(.52, .07, 4, 10), C.collar, 0, 1.72, .05); collar.rotation.x = Math.PI / 2 - .15; cat.add(collar);
-    cat.add(mesh(ico(.1), C.bell, 0, 1.6, .55));
+    var collar = mesh(new THREE.TorusGeometry(.76, .075, 4, 12), C.collar, 0, 1.5, .04); collar.rotation.x = Math.PI / 2 - .12; collar.scale.set(1, .95, 1); cat.add(collar);
+    var tag = mesh(new THREE.BoxGeometry(.26, .19, .05), C.tag, 0, 1.36, .86); tag.rotation.x = -.25; cat.add(tag); p.tag = tag;
+    var spot = mesh(ico(.16), C.white, .03, 1.16, .9); spot.scale.set(1.1, .85, .3); cat.add(spot);
 
     // front legs; the right one bats
     p.legs = [];
@@ -78,7 +82,7 @@
     for (var i = 0; i < 7; i++) {
       var seg = new THREE.Group(); seg.position.y = i ? .3 : 0;
       seg.rotation.x = i ? .32 : -1.25;
-      seg.add(mesh(new THREE.CylinderGeometry(.11 - i * .008, .12 - i * .008, .34, 5), C.ginger, 0, .15, 0));
+      seg.add(mesh(new THREE.CylinderGeometry(.11 - i * .008, .12 - i * .008, .34, 5), i % 2 ? C.stripe : C.ginger, 0, .15, 0));
       parent.add(seg); parent = seg; p.tail.push(seg);
     }
     return {group: cat, p: p};

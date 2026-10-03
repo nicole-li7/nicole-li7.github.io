@@ -4,28 +4,28 @@
 
   // ---------- the cat (drawn once, used twice) ----------
   var CAT = '' +
-    '<g class="tail"><path d="M212 236 C262 236 272 186 250 160 C240 148 226 152 232 166 C246 192 236 214 206 214" fill="#F4A259" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/>' +
-      '<path d="M246 168 l10 -4 M250 186 l11 0 M246 204 l10 5" stroke="#D9803B" stroke-width="4" stroke-linecap="round"/></g>' +
-    '<ellipse cx="150" cy="222" rx="70" ry="60" fill="#F4A259" stroke="#3A2A20" stroke-width="4"/>' +
-    '<ellipse cx="150" cy="236" rx="40" ry="40" fill="#FFE8C7"/>' +
-    '<path d="M90 206 l14 4 M88 226 l15 1 M210 206 l-14 4 M212 226 l-15 1" stroke="#D9803B" stroke-width="4" stroke-linecap="round"/>' +
-    '<g><path d="M96 92 L88 36 L132 66 Z" fill="#F4A259" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/><path d="M100 80 L96 50 L120 66 Z" fill="#FFD3A8"/></g>' +
-    '<g class="ear-r"><path d="M204 92 L212 36 L168 66 Z" fill="#F4A259" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/><path d="M200 80 L204 50 L180 66 Z" fill="#FFD3A8"/></g>' +
-    '<circle cx="150" cy="118" r="62" fill="#F4A259" stroke="#3A2A20" stroke-width="4"/>' +
-    '<path d="M138 62 q2 12 0 20 M150 58 v22 M162 62 q-2 12 0 20" stroke="#D9803B" stroke-width="4" stroke-linecap="round" fill="none"/>' +
-    '<ellipse cx="150" cy="142" rx="34" ry="24" fill="#FFE8C7"/>' +
+    '<g class="tail"><path d="M212 236 C262 236 272 186 250 160 C240 148 226 152 232 166 C246 192 236 214 206 214" fill="#E7A462" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/>' +
+      '<path d="M246 168 l10 -4 M250 186 l11 0 M246 204 l10 5" stroke="#CF8A4E" stroke-width="4" stroke-linecap="round"/></g>' +
+    '<ellipse cx="150" cy="222" rx="70" ry="60" fill="#E7A462" stroke="#3A2A20" stroke-width="4"/>' +
+    '<ellipse cx="150" cy="236" rx="40" ry="40" fill="#F7DAB2"/>' +
+    '<path d="M90 206 l14 4 M88 226 l15 1 M210 206 l-14 4 M212 226 l-15 1" stroke="#CF8A4E" stroke-width="4" stroke-linecap="round"/>' +
+    '<g><path d="M96 92 L88 36 L132 66 Z" fill="#E7A462" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/><path d="M100 80 L96 50 L120 66 Z" fill="#F2ABA2"/></g>' +
+    '<g class="ear-r"><path d="M204 92 L212 36 L168 66 Z" fill="#E7A462" stroke="#3A2A20" stroke-width="4" stroke-linejoin="round"/><path d="M200 80 L204 50 L180 66 Z" fill="#F2ABA2"/></g>' +
+    '<circle cx="150" cy="118" r="62" fill="#E7A462" stroke="#3A2A20" stroke-width="4"/>' +
+    '<path d="M138 62 q2 12 0 20 M150 58 v22 M162 62 q-2 12 0 20" stroke="#CF8A4E" stroke-width="4" stroke-linecap="round" fill="none"/>' +
+    '<ellipse cx="150" cy="142" rx="34" ry="24" fill="#F7DAB2"/>' +
     '<g class="eyes-open"><g class="eyes"><ellipse cx="127" cy="116" rx="9" ry="12" fill="#3A2A20"/><ellipse cx="173" cy="116" rx="9" ry="12" fill="#3A2A20"/>' +
       '<circle cx="130" cy="111" r="3.5" fill="#fff"/><circle cx="176" cy="111" r="3.5" fill="#fff"/></g>' +
-      '<g class="lids"><rect x="114" y="102" width="26" height="28" rx="12" fill="#F4A259"/><rect x="160" y="102" width="26" height="28" rx="12" fill="#F4A259"/></g></g>' +
+      '<g class="lids"><rect x="114" y="102" width="26" height="28" rx="12" fill="#E7A462"/><rect x="160" y="102" width="26" height="28" rx="12" fill="#E7A462"/></g></g>' +
     '<g class="zz"><path d="M116 118 q11 9 22 0 M162 118 q11 9 22 0" stroke="#3A2A20" stroke-width="4" fill="none" stroke-linecap="round"/>' +
       '<text x="205" y="62">z</text><text x="222" y="42">z</text><text x="240" y="24">z</text></g>' +
     '<circle cx="111" cy="138" r="8" fill="#FFB38A" opacity=".7"/><circle cx="189" cy="138" r="8" fill="#FFB38A" opacity=".7"/>' +
-    '<path d="M144 132 h12 l-6 7 z" fill="#C8624A" stroke="#3A2A20" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M144 132 h12 l-6 7 z" fill="#E8907E" stroke="#3A2A20" stroke-width="2" stroke-linejoin="round"/>' +
     '<path d="M150 139 q-5 8 -12 4 M150 139 q5 8 12 4" stroke="#3A2A20" stroke-width="3" fill="none" stroke-linecap="round"/>' +
     '<path d="M110 134 l-32 -6 M110 142 l-32 4 M190 134 l32 -6 M190 142 l32 4" stroke="#3A2A20" stroke-width="2.5" stroke-linecap="round"/>' +
-    '<path d="M104 172 q46 18 92 0" stroke="#4E9A35" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="150" cy="184" r="7" fill="#FFE97A" stroke="#3A2A20" stroke-width="3"/>' +
-    '<ellipse cx="124" cy="276" rx="18" ry="12" fill="#FFE8C7" stroke="#3A2A20" stroke-width="4"/>' +
-    '<g class="paw"><path d="M178 205 C186 230 186 255 176 266" stroke="#3A2A20" stroke-width="4" fill="none"/><ellipse cx="176" cy="276" rx="18" ry="12" fill="#FFE8C7" stroke="#3A2A20" stroke-width="4"/></g>';
+    '<path d="M104 172 q46 18 92 0" stroke="#2A2228" stroke-width="9" fill="none" stroke-linecap="round"/><rect x="141" y="179" width="18" height="13" rx="3" fill="#F2A7C3" stroke="#3A2A20" stroke-width="3"/><ellipse cx="152" cy="200" rx="9" ry="6" fill="#FFFDF8"/>' +
+    '<ellipse cx="124" cy="276" rx="18" ry="12" fill="#F7DAB2" stroke="#3A2A20" stroke-width="4"/>' +
+    '<g class="paw"><path d="M178 205 C186 230 186 255 176 266" stroke="#3A2A20" stroke-width="4" fill="none"/><ellipse cx="176" cy="276" rx="18" ry="12" fill="#F7DAB2" stroke="#3A2A20" stroke-width="4"/></g>';
   var catEl = document.getElementById('cat');
   catEl.innerHTML = CAT;
   document.getElementById('napcat').innerHTML = CAT;
