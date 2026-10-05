@@ -741,98 +741,75 @@
     }, focus: {cam: [0, 5.3, 1.6 + CARD_Z], look: [0, .2, CARD_Z + .22]}};
   }
 
-  // ---------- put everything on the vanity ----------
-  var ORDER = ['about', 'lifetracker', 'internscout', 'search', 'cycle', 'robots', 'skills', 'contact'];
-  var PROJ = ['lifetracker', 'internscout', 'search', 'cycle', 'robots'];
-  var NAMES = {about: ['about me', 'the pouch'], lifetracker: ['LifeTracker', 'the lipstick'], internscout: ['InternScout', 'the contour palette'], search: ['Search Explorer', 'the nail polish'],
-               cycle: ['Cycle', 'the liquid blush'], robots: ['Robot Router', 'the powder compact'], skills: ['skills', 'the eyeshadow palette'], contact: ['say hi', 'the perfume']};
-  var BAG_TOP = new THREE.Vector3(0, 2.3, -2.6);
-  var items = ORDER.map(function(key, i){
-    var it = ({about: aboutPouch, skills: skillPalette, contact: perfume, lifetracker: lipstick, cycle: liquidBlush, search: nailPolish, robots: powderCompact,
-               internscout: function(k){ return contourPalette(k, 2); }})[key](key);
-    it.key = key; it.o = 0; it.lift = 0;
-    var a = -1.2 + 2.4 * i / (ORDER.length - 1);
-    it.home = new THREE.Vector3(Math.sin(a) * 6.5, 0, -2.6 + Math.cos(a) * 6.5);
-    it.homeRot = -a * .5;
-    it.group.visible = false;
-    it.group.traverse(function(o){ if (o.isMesh) { o.userData.item = i; o.castShadow = true; } });
-    scene.add(it.group);
+  // ---------- everything lives in the bag; the menu brings one thing out at a time ----------
+  var ORDER = ['intro', 'about', 'lifetracker', 'internscout', 'search', 'cycle', 'robots', 'skills', 'contact'];
+  var NAMES = {intro: ['hi, i’m Nicole', 'the mirror'], about: ['about me', 'the pouch'], lifetracker: ['LifeTracker', 'the lipstick'], internscout: ['InternScout', 'the contour palette'],
+               search: ['Search Explorer', 'the nail polish'], cycle: ['Cycle', 'the liquid blush'], robots: ['Robot Router', 'the powder compact'],
+               skills: ['skills', 'the eyeshadow palette'], contact: ['say hi', 'the perfume']};
+  var STAGE = new THREE.Vector3(.2, 0, 1.3), IN_BAG = new THREE.Vector3(0, .4, -2.6);
+  var builders = {about: aboutPouch, skills: skillPalette, contact: perfume, lifetracker: lipstick, cycle: liquidBlush, search: nailPolish, robots: powderCompact,
+                  internscout: function(k){ return contourPalette(k, 2); }};
+  DATA.intro = {title: 'hi, i’m Nicole', desc: 'Computer science student at UBC who likes shipping small, polished apps for real life. Looking for a summer 2027 internship.', paras: [], bullets: [], chips: [],
+                links: [{text: 'resume', resume: true}, {text: 'github', href: 'https://github.com/nicole-li7', ext: true}]};
+  var items = ORDER.map(function(key){
+    var it = key === 'intro' ? {group: mirror, open: function(){}, focus: {cam: [0, 2.75, 5.6], look: [0, 2.62, 0]}} : builders[key](key);
+    it.key = key; it.f = 0; it.o = 0; it.group.visible = false; scene.add(it.group);
+    it.group.traverse(function(o){ if (o.isMesh) o.castShadow = true; });
     return it;
   });
-  scene.add(mirror); mirror.visible = false;
-  mirror.traverse(function(o){ if (o.isMesh) o.userData.item = 'mirror'; });
-  var MIRROR_HOME = new THREE.Vector3(-4.3, 0, -4.6), MIRROR_ROT = .4, FOCUS_LIFT = 1.6;
+  var selected = -1, lidP = 0;
 
-  // ---------- camera moves ----------
-  var view = {pos: new THREE.Vector3(.5, 4.4, 8.8), look: new THREE.Vector3(.3, 1.2, -2.6), off: -.2};
-  var tween = null;
-  function goView(pos, look, off, dur){
-    tween = {fp: view.pos.clone(), fl: view.look.clone(), fo: view.off, tp: pos, tl: look, to: off, t: 0, d: dur || 1.1};
+  // ---------- camera ----------
+  var view = {pos: new THREE.Vector3(.5, 4.4, 8.8), look: new THREE.Vector3(.3, 1.2, -2.6), off: -.2}, tween = null;
+  function goView(v, dur){ tween = {fp: view.pos.clone(), fl: view.look.clone(), fo: view.off, tp: v[0], tl: v[1], to: v[2], t: 0, d: dur || 1.2}; }
+  function closedView(){ return [new THREE.Vector3(.5, 4.4, 8.8), new THREE.Vector3(.3, 1.2, -2.6), -.2]; }
+  function itemView(i){
+    var f = items[i].focus;
+    var look = STAGE.clone().add(new THREE.Vector3().fromArray(f.look)), cam = STAGE.clone().add(new THREE.Vector3().fromArray(f.cam));
+    cam.sub(look).multiplyScalar(1.22).add(look);   // a little further back, so it fits beside the menu
+    return [cam, look, -.17];
   }
-  var V = {
-    closed: function(){ return [new THREE.Vector3(.5, 4.4, 8.8), new THREE.Vector3(.3, 1.2, -2.6), -.2]; },
-    overview: function(){ return [new THREE.Vector3(0, 10.8, 14.2), new THREE.Vector3(0, 1.0, -.6), 0]; },
-    mirror: function(){
-      var c = MIRROR_HOME.clone().add(new THREE.Vector3(0, 2.9, 0)), n = new THREE.Vector3(Math.sin(MIRROR_ROT), 0, Math.cos(MIRROR_ROT));
-      return [c.clone().addScaledVector(n, 5.3).add(new THREE.Vector3(0, -.1, 0)), c.clone().add(new THREE.Vector3(0, -.45, 0)), 0];
-    },
-    item: function(i){ var it = items[i], f = it.focus, up = new THREE.Vector3(0, FOCUS_LIFT, 0); return [it.home.clone().add(up).add(new THREE.Vector3().fromArray(f.cam)), it.home.clone().add(up).add(new THREE.Vector3().fromArray(f.look)), 0]; }
-  };
 
-  // ---------- state ----------
-  var state = 'closed', seqA = 0, seqB = 0, tA = 0, tB = 0, focusIdx = -1, closingStage = 0;
+  // ---------- the menu on the side ----------
+  var menu = document.getElementById('menu'), menuBtns = [];
+  ORDER.forEach(function(key, i){
+    if (key === 'lifetracker') { var h = document.createElement('p'); h.className = 'menu-h'; h.textContent = 'projects'; menu.appendChild(h); }
+    if (key === 'skills') { var h2 = document.createElement('p'); h2.className = 'menu-h'; h2.textContent = 'more'; menu.appendChild(h2); }
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'menu-item';
+    b.innerHTML = '<span>' + NAMES[key][0] + '</span><small>' + NAMES[key][1] + '</small>';
+    b.addEventListener('click', function(){ select(selected === i ? -1 : i); });
+    menu.appendChild(b); menuBtns.push(b);
+  });
+
   var actions = document.getElementById('actions'), readout = document.getElementById('readout');
-  function classes(){
-    ['closed', 'opened', 'mirroring', 'overview', 'focused'].forEach(function(c){ body.classList.remove(c); });
-    ({closed: ['closed'], opening: ['opened', 'mirroring'], mirror: ['opened', 'mirroring'], overview: ['opened', 'overview'], focus: ['opened', 'focused'], closing: ['opened']})[state]
-      .forEach(function(c){ body.classList.add(c); });
-  }
   function btn(label, cls, fn){ var b = document.createElement('button'); b.type = 'button'; b.className = 'btn small ' + (cls || ''); b.textContent = label; b.addEventListener('click', fn); return b; }
   function link(l){
     if (l.resume) return btn(l.text, 'alt', openResume);
     var a = document.createElement('a'); a.className = 'btn small alt'; a.href = l.href; a.textContent = l.text;
     if (l.ext) { a.target = '_blank'; a.rel = 'noopener'; } return a;
   }
-  function setActions(){
+  function refresh(){
+    body.classList.toggle('showing', selected >= 0); body.classList.toggle('closed', selected < 0);
+    menuBtns.forEach(function(b, i){ b.classList.toggle('on', i === selected); b.setAttribute('aria-pressed', i === selected); });
     actions.innerHTML = '';
-    if (state === 'mirror' || state === 'opening') {
-      actions.append(btn('see what’s in my bag ✨', '', toOverview), btn('resume', 'alt', openResume), link({text: 'github', href: 'https://github.com/nicole-li7', ext: true}));
-      readout.textContent = 'The mirror: hi, I’m Nicole. Computer science student at UBC. I make ' + roles.join(', and ') + '.';
-    } else if (state === 'focus') {
-      var it = items[focusIdx], d = DATA[it.key];
-      actions.append(btn('← previous', 'alt', function(){ focus((focusIdx + items.length - 1) % items.length); }), btn('back to the bag', '', toOverview), btn('next →', 'alt', function(){ focus((focusIdx + 1) % items.length); }));
-      d.links.forEach(function(l){ actions.append(link(l)); });
-      readout.textContent = d.title + '. ' + (d.desc || d.paras.join(' ')) + ' ' + d.bullets.join(' ') + (d.chips.length ? ' Made with ' + d.chips.join(', ') + '.' : '');
-    }
+    if (selected < 0) { readout.textContent = ''; return; }
+    var it = items[selected], d = DATA[it.key];
+    d.links.forEach(function(l){ actions.append(link(l)); });
+    actions.append(btn('put it back', '', function(){ select(-1); }));
+    readout.textContent = NAMES[it.key][1] + ': ' + d.title + '. ' + (d.desc || d.paras.join(' ')) + ' ' + d.bullets.join(' ') + (d.chips.length ? ' Made with ' + d.chips.join(', ') + '.' : '');
   }
-  function open(){
-    if (state === 'closed' || state === 'closing') { state = 'opening'; tA = 1; tB = 0; classes(); setActions(); }
+  function select(i){
+    selected = i; refresh();
+    goView(i < 0 ? closedView() : itemView(i), i < 0 ? 1.6 : 1.3);
   }
-  function toMirror(){ state = 'mirror'; tA = 1; classes(); setActions(); var v = V.mirror(); goView(v[0], v[1], v[2]); }
-  function toOverview(){ state = 'overview'; tA = 1; tB = 1; focusIdx = -1; classes(); setActions(); var v = V.overview(); goView(v[0], v[1], v[2], 1.2); }
-  function focus(i){ if (seqB < 1) { tA = tB = 1; } state = 'focus'; focusIdx = i; classes(); setActions(); var v = V.item(i); goView(v[0], v[1], v[2], 1.0); }
-  function zipUp(){ state = 'closing'; tB = 0; focusIdx = -1; closingStage = 1; classes(); var v = V.closed(); goView(v[0], v[1], v[2], 1.6); }
-  function instantOpen(){ seqA = tA = 1; seqB = tB = 1; }
-  document.getElementById('zipUp').addEventListener('click', zipUp);
   addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && state === 'focus') toOverview();
-    if (state === 'focus' && e.key === 'ArrowRight') focus((focusIdx + 1) % items.length);
-    if (state === 'focus' && e.key === 'ArrowLeft') focus((focusIdx + items.length - 1) % items.length);
+    if (selected < 0) return;
+    if (e.key === 'Escape') select(-1);
+    if (e.key === 'ArrowDown') { e.preventDefault(); select((selected + 1) % items.length); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); select((selected + items.length - 1) % items.length); }
   });
 
-  // labels under each product (and the keyboard way in)
-  var labelsEl = document.getElementById('labels'), labels = [];
-  items.forEach(function(it, i){
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'lab';
-    b.innerHTML = NAMES[it.key][0] + '<small>' + NAMES[it.key][1] + '</small>';
-    b.addEventListener('click', function(){ focus(i); });
-    b.addEventListener('mouseenter', function(){ hover = i; }); b.addEventListener('mouseleave', function(){ hover = -1; });
-    labelsEl.appendChild(b); labels.push(b);
-  });
-  var mirrorLab = document.createElement('button'); mirrorLab.type = 'button'; mirrorLab.className = 'lab'; mirrorLab.innerHTML = 'hi, i’m Nicole<small>the mirror</small>';
-  mirrorLab.addEventListener('click', toMirror); labelsEl.appendChild(mirrorLab);
-
-  // nav + buttons
+  // nav + hero buttons
   document.querySelectorAll('[data-go]').forEach(function(a){
     a.addEventListener('click', function(e){
       var go = a.dataset.go;
@@ -843,167 +820,111 @@
       e.preventDefault();
       if (go === 'contact') { document.getElementById('contact').scrollIntoView({behavior: 'smooth'}); return; }
       scrollTo({top: 0, behavior: 'smooth'});
-      if (go === 'open') { if (state === 'closed') open(); else toMirror(); }
-      else if (go === 'top') { if (state === 'closed') return; toMirror(); }
-      else if (go === 'projects') toOverview();
-      else if (go === 'about') focus(0);
+      select({top: 0, open: 0, about: 1, projects: 2}[go]);
     });
   });
 
-  // ---------- pointer: hover and click in 3D ----------
-  var ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), hover = -1, hot = null, mouse = {x: 0, y: 0}, pending = false;
+  // ---------- pointer: clicking the bag, and the links drawn on cards ----------
+  var ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), mouse = {x: 0, y: 0};
+  function isBag(o){ while (o) { if (o === bag) return true; o = o.parent; } return false; }
   function pick(e){
     var r = canvas.getBoundingClientRect();
     ptr.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
     ray.setFromCamera(ptr, camera);
     var hits = ray.intersectObjects(scene.children, true);
-    for (var i = 0; i < hits.length; i++) {
-      var h = hits[i], o = h.object;
-      if (!o.visible || o.userData.item === undefined && !o.userData.T && !isBag(o)) continue;
-      return h;
-    }
+    for (var i = 0; i < hits.length; i++) { var o = hits[i].object; if (o.visible && o !== table) return hits[i]; }
     return null;
   }
-  function isBag(o){ while (o) { if (o === bag) return true; o = o.parent; } return false; }
   function spotAt(h){
-    var T = h.object.userData.T; if (!T || !h.uv) return null;
+    var T = h && h.object.userData.T; if (!T || !h.uv) return null;
     var x = h.uv.x * T.w, y = (1 - h.uv.y) * T.h;
     for (var i = 0; i < T.hot.length; i++) { var s = T.hot[i]; if (x >= s.x && x <= s.x + s.w && y >= s.y && y <= s.y + s.h) return s.action; }
     return null;
   }
-  function owner(o){ while (o) { if (o.userData.item !== undefined) return o.userData.item; o = o.parent; } return undefined; }
   function act(a){
     if (!a) return;
-    if (a.go === 'overview') return toOverview();
     if (a.resume) return openResume();
     if (a.href) { if (a.ext) window.open(a.href, '_blank', 'noopener'); else location.href = a.href; }
   }
   canvas.addEventListener('pointermove', function(e){
-    mouse.x = e.clientX / innerWidth * 2 - 1; mouse.y = e.clientY / innerHeight * 2 - 1;
-    var h = pick(e), point = false; hot = null;
-    if (state === 'closed') point = !!h && isBag(h.object);
-    else if (state === 'overview') { var ow = h ? owner(h.object) : undefined; hover = typeof ow === 'number' ? ow : -1; point = ow !== undefined; }
-    else if (h && (state === 'mirror' || state === 'focus')) { hot = spotAt(h); point = !!hot; }
-    canvas.classList.toggle('point', point);
-    labels.forEach(function(l, i){ l.classList.toggle('hot', i === hover); });
+    var h = pick(e), point = !!spotAt(h) || (selected < 0 && h && isBag(h.object));
+    canvas.classList.toggle('point', !!point);
   });
   canvas.addEventListener('click', function(e){
-    var h = pick(e);
-    if (state === 'closed') { if (h && isBag(h.object)) open(); return; }
-    if (state === 'overview') { var ow = h ? owner(h.object) : undefined; if (ow === 'mirror') toMirror(); else if (typeof ow === 'number') focus(ow); return; }
-    if (h && (state === 'mirror' || state === 'focus')) act(spotAt(h));
+    var h = pick(e), a = spotAt(h);
+    if (a) return act(a);
+    if (selected < 0 && h && isBag(h.object)) select(0);
   });
   addEventListener('pointermove', function(e){ mouse.x = e.clientX / innerWidth * 2 - 1; mouse.y = e.clientY / innerHeight * 2 - 1; });
 
   // ---------- each frame ----------
   function clamp01(x){ return Math.max(0, Math.min(1, x)); }
   function ease(x){ x = clamp01(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
-  function lerpV(a, b, t){ return a.clone().lerp(b, t); }
-  var last = performance.now(), mirrorClock = 0, tmp = new THREE.Vector3();
-  function size(){
-    var w = vanity.clientWidth, h = vanity.clientHeight; if (!w || !h) return;
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-  }
+  var last = performance.now(), typeClock = 0;
+  function size(){ var w = vanity.clientWidth, h = vanity.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
   size(); addEventListener('resize', function(){ applyMode(); size(); });
 
-  function poseMirror(){
-    var s = clamp01((seqA - .38) / .62);
-    mirror.visible = s > 0;
-    if (!mirror.visible) return;
-    var rise = ease(s / .5), go = ease((s - .5) / .5);
-    var p0 = bag.position.clone().add(new THREE.Vector3(0, -1.6, 0)), p1 = new THREE.Vector3(0, 1.6, -1.6);
-    var p = s < .5 ? lerpV(p0, p1, rise) : lerpV(p1, MIRROR_HOME, go);
-    mirror.position.copy(p);
-    mirror.scale.setScalar(.45 + .55 * rise);
-    // it comes out showing its strawberry back, spins round to the glass, then settles turned toward the room
-    mirror.rotation.y = s < .5 ? Math.PI + rise * Math.PI : MIRROR_ROT * go;
-    mirror.position.y += Math.sin(performance.now() / 900) * .05 * go;
-  }
-  function poseItems(dt){
+  function step(dt){
+    var busy = items.some(function(it, i){ return i !== selected && it.f > 0; });
+    // the bag is open while anything is out or on its way
+    var wantLid = selected >= 0 || items.some(function(it){ return it.f > 0; });
+    lidP = clamp01(lidP + (wantLid ? dt / .8 : -dt / .8));
+    puller.position.x = -1.4 + 2.8 * ease(lidP / .4);
+    lid.rotation.x = -1.95 * ease((lidP - .3) / .7);
+
     items.forEach(function(it, i){
-      var s = clamp01((seqB - i * .06) / .5);
-      it.group.visible = s > 0;
-      if (!it.group.visible) return;
-      var e = ease(s), start = BAG_TOP.clone();
-      var p = lerpV(start, it.home, e); p.y += Math.sin(Math.PI * e) * 3.2;
-      var focused = state === 'focus' && focusIdx === i, hov = state === 'overview' && hover === i;
-      // hovering lifts it a little; opening it lifts it up toward you, away from its neighbours
-      it.lift += ((focused ? FOCUS_LIFT : hov ? .3 : 0) - it.lift) * Math.min(1, dt * (focused ? 4 : 10));
-      p.y += it.lift;
-      it.group.position.copy(p);
-      it.group.scale.setScalar(.4 + .6 * e);
-      var targetRot = focused ? 0 : it.homeRot;
-      it.group.rotation.y = s < 1 ? it.homeRot + (1 - e) * 6.28 : it.group.rotation.y + (targetRot - it.group.rotation.y) * Math.min(1, dt * 6);
-      if (it.dur) it.o = Math.max(0, Math.min(1, it.o + (focused ? dt / it.dur : -dt * 2.5)));
-      else it.o += ((focused ? 1 : 0) - it.o) * Math.min(1, dt * (focused ? 1.8 : 3));
+      if (i === selected) {
+        if (!busy && lidP >= 1) it.f = clamp01(it.f + dt / 1.1);           // rise out once the bag is open and nothing else is out
+        if (it.f >= 1) it.o = it.dur ? clamp01(it.o + dt / it.dur) : it.o + (1 - it.o) * Math.min(1, dt * 1.8);
+      } else {
+        if (it.o > .001) it.o = it.dur ? clamp01(it.o - dt * 2.5) : it.o * Math.max(0, 1 - dt * 4);   // close it up first
+        else { it.o = 0; it.f = clamp01(it.f - dt / .8); }                                             // then back into the bag
+      }
+      var g = it.group, e = ease(it.f);
+      g.visible = it.f > 0;
+      if (!g.visible) return;
+      g.position.lerpVectors(IN_BAG, STAGE, e); g.position.y += Math.sin(Math.PI * e) * 2.6;
+      g.scale.setScalar(.3 + .7 * e);
+      g.rotation.y = (1 - e) * (it.key === 'intro' ? 3 : 2) * Math.PI;    // the mirror comes out showing its strawberry back
+      if (it.key === 'intro') g.position.y += Math.sin(performance.now() / 900) * .04 * e;
       it.open(it.o, dt);
     });
   }
-  function poseBag(){
-    var zip = ease(seqA / .22), lidO = ease((seqA - .18) / .28);
-    puller.position.x = -1.4 + 2.8 * zip;
-    lid.rotation.x = -1.95 * lidO;
-  }
-  function placeLabels(){
-    if (state !== 'overview') return;
-    var w = vanity.clientWidth, h = vanity.clientHeight;
-    items.forEach(function(it, i){
-      tmp.copy(it.group.position); tmp.y = -.05; tmp.z += 1.15; tmp.project(camera);
-      labels[i].style.transform = 'translate(' + ((tmp.x + 1) / 2 * w).toFixed(0) + 'px,' + ((1 - tmp.y) / 2 * h).toFixed(0) + 'px) translate(-50%,0)';
-    });
-    tmp.copy(mirror.position); tmp.y += .2; tmp.project(camera);
-    mirrorLab.style.transform = 'translate(' + ((tmp.x + 1) / 2 * w).toFixed(0) + 'px,' + ((1 - tmp.y) / 2 * h).toFixed(0) + 'px) translate(-50%,0)';
-  }
 
   function frame(now){
-    var dt = Math.min(.05, (now - last) / 1000); last = now;
+    var dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;   // never negative: the first frame can be stamped a touch early
     requestAnimationFrame(frame);
     if (root.classList.contains('flat') || document.hidden) return;
-
-    // sequences: A = unzip + mirror out, B = everything else out
-    var spA = state === 'closing' && seqB > 0 ? 0 : 1;
-    seqA += Math.sign(tA - seqA) * Math.min(Math.abs(tA - seqA), dt / 2.4 * spA);
-    seqB += Math.sign(tB - seqB) * Math.min(Math.abs(tB - seqB), dt / 2.0);
-    if (state === 'closing' && seqB <= 0) tA = 0;
-    if (state === 'closing' && seqA <= 0 && seqB <= 0) { state = 'closed'; classes(); setActions(); }
-    if (state === 'opening' && seqA >= .62) toMirror();
-
-    poseBag(); poseMirror(); poseItems(dt);
-
-    // mirror text: redraw for the typing effect while it's on screen
-    if (mirror.visible && (state === 'mirror' || state === 'opening')) { mirrorClock += dt; if (mirrorClock > .09) { mirrorClock = 0; mirrorTex.redraw(); } }
-
-    // camera
+    step(dt);
+    if (selected === 0 && items[0].f > .5) { typeClock += dt; if (typeClock > .09) { typeClock = 0; mirrorTex.redraw(); } }
     if (tween) {
       tween.t += dt / tween.d; var k = ease(tween.t);
       view.pos.copy(tween.fp).lerp(tween.tp, k); view.look.copy(tween.fl).lerp(tween.tl, k); view.off = tween.fo + (tween.to - tween.fo) * k;
       if (tween.t >= 1) tween = null;
     }
-    var sway = state === 'closed' || state === 'overview' ? 1 : .25;
+    var sway = selected < 0 ? 1 : .25;
     camera.position.copy(view.pos).add(new THREE.Vector3(mouse.x * .8 * sway, -mouse.y * .4 * sway, 0));
     camera.lookAt(view.look);
     var w = vanity.clientWidth, h = vanity.clientHeight;
     camera.setViewOffset(w, h, view.off * w, 0, w, h);
     renderer.render(scene, camera);
-    placeLabels();
   }
 
-  // build the mirror glass now that the drawing function exists
+  // the mirror glass, now that the drawing function exists
   mirrorTex = texture(1000, 1250, drawMirror);
   glass = surface(planarUV(new THREE.ShapeGeometry(ellipse(.92, 1.15), 40), 1.84, 2.3), mirrorTex);
-  glass.position.z = .14; glass.userData.item = 'mirror'; mirrorInner.add(glass);
+  glass.position.z = .14; mirrorInner.add(glass);
 
   // fonts load after first paint; redraw the text once they're in
   if (document.fonts) Promise.all(['700 80px Fraunces', 'italic 700 80px Fraunces', 'italic 600 40px Fraunces', '800 40px Nunito', '600 40px Nunito', '400 40px Nunito', '500 40px Nunito', '700 60px Caveat', '600 60px Caveat'].map(function(f){ return document.fonts.load(f); })).then(redrawAll, redrawAll);
 
-  classes(); setActions();
-  // arriving from a project page (index.html#projects etc.) skips straight in
-  var hash = location.hash.slice(1);
-  if (hash === 'projects' || hash === 'about') {
-    instantOpen();
-    if (hash === 'projects') { state = 'overview'; var v = V.overview(); } else { state = 'focus'; focusIdx = 0; v = V.item(0); }
-    view.pos.copy(v[0]); view.look.copy(v[1]); view.off = v[2]; classes(); setActions();
+  refresh();
+  // arriving from a project page (index.html#projects etc.) brings that thing straight out
+  var hash = location.hash.slice(1), start = {projects: 2, about: 1}[hash];
+  if (start !== undefined) {
+    selected = start; lidP = 1; items[start].f = 1; var v = itemView(start);
+    view.pos.copy(v[0]); view.look.copy(v[1]); view.off = v[2]; refresh();
   }
-  window.__bag = {get state(){ return state; }, open: open, toOverview: toOverview, focus: focus, zipUp: zipUp};   // for poking at it from the console
+  window.__bag = {select: select, get selected(){ return selected; }, get debug(){ return JSON.stringify({lid: lidP, items: items.map(function(it){ return [it.key, +it.f.toFixed(2), +it.o.toFixed(2), it.group.visible]; })}); }};   // for poking at it from the console
   requestAnimationFrame(frame);
 })();
