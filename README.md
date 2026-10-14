@@ -2,6 +2,13 @@
 
 Nicole's portfolio, built as a Smiski sticker book: light green, chunky outlines, and little green figures hiding in the corners. Live at https://nicole-li7.github.io.
 
+## Demo
+
+![Picking projects out of the makeup bag on the home page](docs/demo.gif)
+
+Live at https://nicole-li7.github.io. Every project page also has a demo you can play with in the browser.
+
+
 ## Features
 
 **Home page**
