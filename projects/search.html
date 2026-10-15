@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Search Algorithm Explorer by Nicole Li: A* and Minimax with alpha-beta pruning written from scratch in C++. Try both in your browser.">
+<meta name="description" content="Search Algorithm Explorer by Nicole Li: A* and Minimax with alpha-beta pruning written from scratch in C++. Solve the 8-puzzle and play tic-tac-toe, Othello and chess against it in your browser.">
 <link rel="icon" href="../figures/idea.png">
 <title>Search Algorithm Explorer · Nicole Li</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,8 +28,34 @@
 .ttt button.win{background:#FFE97A}
 .ttt button:focus-visible{outline:3px dashed var(--g5); outline-offset:2px}
 .msg{font:600 18px "Fredoka",sans-serif; margin:0 0 12px; min-height:1.4em}
+.b8{display:grid; grid-template-columns:repeat(8,1fr); width:368px; max-width:100%; aspect-ratio:1; padding:8px; border:3px solid var(--line); border-radius:18px; box-sizing:border-box}
+.b8 button{position:relative; aspect-ratio:1; min-width:0; padding:0; border:0; margin:0; cursor:pointer; display:grid; place-items:center}
+.b8 button:disabled{cursor:default}
+.b8 button:focus-visible{outline:3px dashed #FFE97A; outline-offset:-3px; z-index:1}
+.oth{background:#3E8E2A; gap:3px}
+.oth button{background:#5FB244; border-radius:6px}
+.oth button.last{background:#8AD25F}
+.oth .disc{width:78%; height:78%; border-radius:50%; border:2px solid #12281A; box-shadow:0 2px 0 #12281A; transition:background .25s}
+.oth .disc.b{background:#12281A}
+.oth .disc.w{background:#fff}
+.oth .hint{width:24%; height:24%; border-radius:50%; background:rgba(18,40,26,.35)}
+.chs{background:#1F3A2A; gap:0; padding:6px}
+.chs button{background:#EEF9E4; font-size:clamp(22px,7.4vw,34px); line-height:1}
+.chs button.dk{background:#8AD25F}
+.chs button.last{box-shadow:inset 0 0 0 100px rgba(255,233,122,.55)}
+.chs button.sel{box-shadow:inset 0 0 0 4px #1F3A2A, inset 0 0 0 100px rgba(255,233,122,.8)}
+.chs button.chk{box-shadow:inset 0 0 0 100px rgba(232,93,93,.6)}
+.chs .pc{font-family:"Segoe UI Symbol","Apple Symbols","DejaVu Sans",serif; pointer-events:none}
+.chs .pc.w{color:#fff; text-shadow:0 0 1px #12281A,1px 1px 0 #12281A,-1px -1px 0 #12281A,1px -1px 0 #12281A,-1px 1px 0 #12281A}
+.chs .pc.b{color:#12281A}
+.chs .dot{position:absolute; width:28%; height:28%; border-radius:50%; background:rgba(31,58,42,.4); pointer-events:none}
+.chs .dot.cap{width:86%; height:86%; background:none; border:4px solid rgba(31,58,42,.4); box-sizing:border-box}
+.score{display:flex; gap:10px; margin:0 0 12px; font:600 15px "Fredoka",sans-serif}
+.score span{display:inline-flex; align-items:center; gap:6px}
+.score i{display:inline-block; width:16px; height:16px; border-radius:50%; border:2px solid var(--line)}
 @media (max-width:760px){
-  .duo{grid-template-columns:1fr; justify-items:center}
+  .duo{grid-template-columns:minmax(0,1fr); justify-items:center}
+  .b8{width:100%; max-width:368px}
   .duo > div:last-child{justify-self:stretch}
   .bar2{grid-template-columns:110px 1fr}
 }
@@ -120,7 +146,40 @@
         </div>
       </div>
     </div>
-    <p class="demo-note">Both demos are JavaScript ports of the same algorithms, made so they run right here. The C++ originals are in the repos.</p>
+
+    <div class="demo-card">
+      <h3 class="demo-sub">Minimax on Othello</h3>
+      <p>You're black and you move first. Place a disc so that it traps a line of white discs between it and another black disc, and they all flip to black. The computer looks 5 moves ahead and scores positions by where the discs sit: corners are worth a lot, the squares right next to them are a trap.</p>
+      <div class="duo">
+        <div class="b8 oth" id="oth" role="grid" aria-label="Othello board"></div>
+        <div>
+          <div class="score" id="oscore"></div>
+          <p class="msg" id="omsg" aria-live="polite">your move</p>
+          <div class="ctrl">
+            <button class="btn small" type="button" id="onew">new game</button>
+            <button class="btn small alt" type="button" id="ofirst">let the computer go first</button>
+          </div>
+          <div class="stat" id="ostat" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-card">
+      <h3 class="demo-sub">Minimax on chess</h3>
+      <p>You're white. Click a piece to see where it can go, then click a square to move it. The computer looks 4 moves ahead and counts material plus piece-square tables, a bonus or penalty for each piece on each square (knights like the centre, kings like to stay home). Castling, en passant and promotion all work.</p>
+      <div class="duo">
+        <div class="b8 chs" id="chs" role="grid" aria-label="Chess board"></div>
+        <div>
+          <p class="msg" id="cmsg" aria-live="polite">your move</p>
+          <div class="ctrl">
+            <button class="btn small" type="button" id="cnew">new game</button>
+            <button class="btn small alt" type="button" id="cfirst">play as black</button>
+          </div>
+          <div class="stat" id="cstat" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">All four demos are JavaScript ports of the same algorithms, made so they run right here. Othello and chess use the same rules, scoring and search depth as the C++ app. The C++ originals are in the repos.</p>
   </section>
 
   <section>
@@ -149,7 +208,8 @@
       </div>
       <div class="note">
         <h3>Four games, one engine</h3>
-        <p>The minimax engine only sees an abstract <code>GameState</code>: its legal moves, what a move leads to, and a score. Tic-tac-toe, Gomoku, Othello and Chess each plug into it, with a small Windows GUI to play against it.</p>
+        <p>The minimax engine only sees an abstract <code>GameState</code>: its legal moves, what a move leads to, and a score. Tic-tac-toe, Gomoku, Othello and Chess each plug into it, with a small Windows GUI to play against it. Three of them are playable above.</p>
+        <p>Tic-tac-toe is small enough to search to the very end. Othello and chess aren't, so the search stops after a few moves and a heuristic guesses who's ahead.</p>
       </div>
     </div>
   </section>
@@ -162,6 +222,7 @@
 <footer>made with ♥ and a lot of little green coworkers · © 2026 Nicole Li</footer>
 
 <script src="../site.js"></script>
+<script src="minimax-games.js"></script>
 <script>
 (function(){
   // ---------- 8-puzzle + A* ----------
@@ -415,6 +476,164 @@
   document.getElementById('tnew').addEventListener('click', function(){ reset(false); });
   document.getElementById('tfirst').addEventListener('click', function(){ reset(true); });
   render();
+
+  // ---------- computer turns for Othello and chess ----------
+  // searches run in a Web Worker (minimax-games.js) so the page stays responsive;
+  // if workers aren't available (e.g. opened from a file) they run here instead
+  var worker = null, jobs = {}, jobId = 0;
+  try {
+    worker = new Worker('minimax-games.js');
+    worker.onmessage = function(e){ var cb = jobs[e.data.id]; delete jobs[e.data.id]; if (cb) cb(e.data); };
+    worker.onerror = function(){ worker = null; };
+  } catch (e) { worker = null; }
+  function think(msg, cb){
+    msg.id = ++jobId;
+    if (worker) { jobs[msg.id] = cb; worker.postMessage(msg); }
+    else setTimeout(function(){ cb(think_(msg)); }, 30);
+    return msg.id;
+  }
+  var think_ = window.think;   // the main-thread copy from minimax-games.js
+  function pct(a, b){ return Math.max(0, Math.floor(100 - a / b * 100)); }
+  function positions(n){ return '<b>' + fmt(n) + '</b> position' + (n === 1 ? '' : 's'); }
+
+  // ---------- Othello ----------
+  var oth = document.getElementById('oth'), omsg = document.getElementById('omsg'),
+      ostat = document.getElementById('ostat'), oscore = document.getElementById('oscore');
+  var og = new Othello(), oHuman = 1, oBusy = false, oJob = 0, oLast = -1, ocells = [];
+  var COLS = 'abcdefgh';
+  for (var q = 0; q < 64; q++) {
+    var ob = document.createElement('button'); ob.type = 'button';
+    ob.addEventListener('click', (function(i){ return function(){ oPlay(i); }; })(q));
+    oth.appendChild(ob); ocells.push(ob);
+  }
+  function sqName(i){ return COLS[i & 7] + (8 - (i >> 3)); }
+  function oRender(){
+    var mine = !oBusy && og.player === oHuman && !og.isTerminal() ? og.moves() : [];
+    ocells.forEach(function(b, i){
+      var v = og.board[i], legal = mine.indexOf(i) >= 0;
+      b.innerHTML = v ? '<span class="disc ' + (v === 1 ? 'b' : 'w') + '"></span>' : legal ? '<span class="hint"></span>' : '';
+      b.classList.toggle('last', i === oLast);
+      b.disabled = !legal;
+      b.setAttribute('aria-label', sqName(i) + ', ' + (v === 1 ? 'black' : v === -1 ? 'white' : legal ? 'empty, legal move' : 'empty'));
+    });
+    oscore.innerHTML = '<span><i style="background:#12281A"></i>black <b>' + og.count(1) + '</b></span><span><i style="background:#fff"></i>white <b>' + og.count(-1) + '</b></span>';
+  }
+  function oEnd(){
+    if (!og.isTerminal()) return false;
+    var me = og.count(oHuman), them = og.count(-oHuman);
+    omsg.textContent = me > them ? 'you win, ' + me + ' to ' + them + '! 🎉' : me < them ? 'the computer wins, ' + them + ' to ' + me : 'a draw, ' + me + ' each 🤝';
+    oRender(); return true;
+  }
+  function oNext(){
+    if (oEnd()) return;
+    if (og.player === oHuman) {
+      if (og.moves()[0] === -1) {   // no legal placement: pass
+        omsg.textContent = "you have no moves, so you pass"; og = og.apply(-1);
+        setTimeout(oNext, 900); oRender(); return;
+      }
+      omsg.textContent = 'your move'; oRender(); return;
+    }
+    oBusy = true; omsg.textContent = 'thinking…'; oRender();
+    var mine = oJob = think({game: 'othello', state: {board: og.board, player: og.player}, depth: 5, compare: true}, function(r){
+      if (mine !== oJob) return;    // a new game started meanwhile
+      oBusy = false;
+      if (r.move === -1) { og = og.apply(-1); omsg.textContent = 'the computer has no moves and passes'; oRender(); setTimeout(oNext, 900); return; }
+      var before = og.count(-oHuman);
+      og = og.apply(r.move); oLast = r.move;
+      var flipped = og.count(-oHuman) - before - 1;
+      ostat.innerHTML = '<span>computer: <b>' + sqName(r.move) + '</b>, flipped ' + flipped + '</span>' +
+        '<span>with pruning: ' + positions(r.nodes) + '</span><span>without: <b>' + fmt(r.plain) + '</b></span>' +
+        '<span>skipped <b>' + pct(r.nodes, r.plain) + '%</b></span>';
+      oNext();
+    });
+  }
+  function oPlay(i){
+    if (oBusy || og.player !== oHuman || og.moves().indexOf(i) < 0) return;
+    og = og.apply(i); oLast = i; oNext();
+  }
+  function oReset(aiFirst){
+    oJob = 0; oBusy = false; og = new Othello(); oHuman = aiFirst ? -1 : 1; oLast = -1; ostat.innerHTML = '';
+    oNext();
+  }
+  document.getElementById('onew').addEventListener('click', function(){ oReset(false); });
+  document.getElementById('ofirst').addEventListener('click', function(){ oReset(true); });
+  oReset(false);
+
+  // ---------- chess ----------
+  var chs = document.getElementById('chs'), cmsg = document.getElementById('cmsg'), cstat = document.getElementById('cstat');
+  var cg = new Chess(), cHuman = 1, cBusy = false, cJob = 0, cSel = -1, ccells = [];
+  var GLYPH = ['', '♟', '♞', '♝', '♜', '♛', '♚'], PNAME = ['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'];
+  var LETTER = ['', '', 'N', 'B', 'R', 'Q', 'K'];
+  for (var q2 = 0; q2 < 64; q2++) {
+    var cb = document.createElement('button'); cb.type = 'button';
+    if (((q2 >> 3) + (q2 & 7)) % 2) cb.classList.add('dk');
+    cb.addEventListener('click', (function(i){ return function(){ cClick(i); }; })(q2));
+    chs.appendChild(cb); ccells.push(cb);
+  }
+  // board is drawn from the human's side
+  function view(k){ return cHuman === 1 ? k : 63 - k; }
+  function cRender(){
+    var moves = !cBusy && cg.player === cHuman ? cg.moves() : [];
+    var targets = cSel < 0 ? [] : moves.filter(function(m){ return (m & 63) === cSel; }).map(function(m){ return (m >> 6) & 63; });
+    var chk = cg.inCheck(cg.player) ? cg.kingSq(cg.player) : -1;
+    ccells.forEach(function(b, k){
+      var i = view(k), v = cg.board[i], t = targets.indexOf(i) >= 0;
+      b.innerHTML = (v ? '<span class="pc ' + (v > 0 ? 'w' : 'b') + '">' + GLYPH[Math.abs(v)] + '︎</span>' : '') +
+        (t ? '<span class="dot' + (v ? ' cap' : '') + '"></span>' : '');
+      b.classList.toggle('last', i === cg.lastFrom || i === cg.lastTo);
+      b.classList.toggle('sel', i === cSel);
+      b.classList.toggle('chk', i === chk);
+      var own = v && (v > 0 ? 1 : -1) === cHuman && moves.some(function(m){ return (m & 63) === i; });
+      b.disabled = !(own || t);
+      b.setAttribute('aria-label', sqName(i) + ', ' + (v ? (v > 0 ? 'white ' : 'black ') + PNAME[Math.abs(v)] : 'empty') + (t ? ', move here' : ''));
+    });
+  }
+  function moveText(state, m){
+    var fr = m & 63, to = (m >> 6) & 63, fl = (m >> 12) & 15, p = Math.abs(state.board[fr]);
+    if (fl === 2) return 'O-O'; if (fl === 3) return 'O-O-O';
+    var cap = state.board[to] || fl === 1;
+    var s = (p === 1 ? (cap ? COLS[fr & 7] : '') : LETTER[p]) + (cap ? 'x' : '') + sqName(to);
+    if (fl >= 4) s += '=' + 'QRBN'[fl - 4];
+    return s;
+  }
+  function cEnd(){
+    if (!cg.isTerminal()) return false;
+    if (cg.inCheck(cg.player)) cmsg.textContent = cg.player === cHuman ? 'checkmate, the computer wins' : 'checkmate, you win! 🎉';
+    else cmsg.textContent = 'stalemate, it’s a draw 🤝';
+    cRender(); return true;
+  }
+  function cNext(){
+    cSel = -1;
+    if (cEnd()) return;
+    if (cg.player === cHuman) { cmsg.textContent = cg.inCheck(cHuman) ? 'check! your move' : 'your move'; cRender(); return; }
+    cBusy = true; cmsg.textContent = 'thinking…'; cRender();
+    var mine = cJob = think({game: 'chess', state: cg, depth: 4}, function(r){
+      if (mine !== cJob) return;
+      cBusy = false;
+      var txt = moveText(cg, r.move);
+      cg = cg.apply(r.move);
+      cstat.innerHTML = '<span>computer: <b>' + txt + '</b></span><span>' + positions(r.nodes) + ' looked at</span><span><b>' + fmt(r.ms) + '</b> ms</span>';
+      cNext();
+    });
+  }
+  function cClick(i){
+    if (cBusy || cg.player !== cHuman) return;
+    var v = cg.board[i];
+    if (v && (v > 0 ? 1 : -1) === cHuman) { cSel = cSel === i ? -1 : i; cRender(); return; }
+    // promotion offers queen and knight; the board click always queens
+    var m = cg.moves().filter(function(x){ return (x & 63) === cSel && ((x >> 6) & 63) === i; })
+      .sort(function(a, b){ return (a >> 12) - (b >> 12); })[0];
+    if (m === undefined) return;
+    cg = cg.apply(m); cNext();
+  }
+  function cReset(asBlack){
+    cJob = 0; cBusy = false; cg = new Chess(); cHuman = asBlack ? -1 : 1; cstat.innerHTML = '';
+    document.getElementById('cfirst').textContent = asBlack ? 'play as white' : 'play as black';
+    cNext();
+  }
+  document.getElementById('cnew').addEventListener('click', function(){ cReset(cHuman === -1); });
+  document.getElementById('cfirst').addEventListener('click', function(){ cReset(cHuman === 1); });
+  cReset(false);
 })();
 </script>
 </body>
